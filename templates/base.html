@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Trading Journal{% endblock %}</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bull-green: #00C851;
+            --bear-red: #FF4444;
+            --dark-bg: #1a1a1a;
+            --card-bg: #2a2a2a;
+            --accent-gold: #FFD700;
+            --neutral-blue: #2E86AB;
+            --warning-orange: #FF6B35;
+            --light-text: #e0e0e0;
+            --muted-text: #888;
+            --border-color: #404040;
+        }
+        body {
+            background: var(--dark-bg) !important;
+            color: var(--light-text);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        main.container, .form-container, .profile-card {
+            background: var(--card-bg);
+            color: var(--light-text);
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.18);
+            border: 1px solid var(--border-color);
+        }
+        .navbar, .navbar-dark {
+            background: linear-gradient(135deg, #1a1a1a, #232323) !important;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .navbar-brand, .navbar-nav .nav-link, .dropdown-item, .dropdown-header {
+            color: var(--light-text) !important;
+        }
+        .navbar-nav .nav-link.active, .navbar-nav .nav-link:hover {
+            background: linear-gradient(90deg, rgba(0,200,81,0.12), rgba(255,68,68,0.12));
+            color: var(--accent-gold) !important;
+        }
+        .dropdown-menu {
+            background: var(--card-bg);
+            color: var(--light-text);
+            border: 1px solid var(--border-color);
+        }
+        .dropdown-item:hover {
+            background: var(--neutral-blue);
+            color: #fff;
+        }
+        .btn-bull {
+            background: linear-gradient(90deg, var(--bull-green), #009e3d);
+            color: #fff;
+            border: none;
+        }
+        .btn-bear {
+            background: linear-gradient(90deg, var(--bear-red), #b30000);
+            color: #fff;
+            border: none;
+        }
+        .btn-gold {
+            background: linear-gradient(90deg, var(--accent-gold), #e6c200);
+            color: #222;
+            border: none;
+        }
+        .btn-neutral {
+            background: linear-gradient(90deg, var(--neutral-blue), #145374);
+            color: #fff;
+            border: none;
+        }
+        .badge-bull {
+            background: linear-gradient(90deg, var(--bull-green), #009e3d);
+            color: #fff;
+            box-shadow: 0 0 8px 2px rgba(0,200,81,0.3);
+        }
+        .badge-bear {
+            background: linear-gradient(90deg, var(--bear-red), #b30000);
+            color: #fff;
+            box-shadow: 0 0 8px 2px rgba(255,68,68,0.3);
+        }
+        .badge-gold {
+            background: linear-gradient(90deg, var(--accent-gold), #e6c200);
+            color: #222;
+        }
+        .card, .card.bg-dark, .card.bg-secondary {
+            background: var(--card-bg) !important;
+            color: var(--light-text) !important;
+            border: 1px solid var(--border-color);
+        }
+        .card-title, .card-header {
+            color: var(--accent-gold);
+        }
+        .text-bull { color: var(--bull-green) !important; }
+        .text-bear { color: var(--bear-red) !important; }
+        .text-gold { color: var(--accent-gold) !important; }
+        .text-muted { color: var(--muted-text) !important; }
+        .table {
+            color: var(--light-text);
+            background: var(--card-bg);
+        }
+        .table th, .table td {
+            border-color: var(--border-color);
+        }
+        .form-control, .form-select {
+            background: #232323;
+            color: var(--light-text);
+            border: 1px solid var(--border-color);
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: var(--accent-gold);
+            box-shadow: 0 0 0 0.2rem rgba(255,215,0,0.15);
+        }
+        .alert {
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+        .alert-success { background: rgba(0,200,81,0.12); color: var(--bull-green); }
+        .alert-danger { background: rgba(255,68,68,0.12); color: var(--bear-red); }
+        .alert-warning { background: rgba(255,107,53,0.12); color: var(--warning-orange); }
+        .alert-info { background: rgba(46,134,171,0.12); color: var(--neutral-blue); }
+        footer {
+            background: var(--card-bg);
+            color: var(--muted-text);
+            border-top: 1px solid var(--border-color);
+        }
+        .navbar-brand {
+            font-weight: bold;
+            font-size: 1.4rem;
+        }
+        .navbar-nav .nav-link {
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        .navbar-nav .nav-link:hover {
+            background-color: rgba(255,255,255,0.1);
+            border-radius: 4px;
+        }
+        .navbar-nav .nav-link.active {
+            background-color: rgba(255,255,255,0.2);
+            border-radius: 4px;
+        }
+        .dropdown-menu {
+            border: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            border-radius: 8px;
+        }
+        .dropdown-item {
+            padding: 0.7rem 1rem;
+            transition: all 0.2s ease;
+        }
+        .dropdown-item:hover {
+            background-color: #f8f9fa;
+            transform: translateX(2px);
+        }
+        .dropdown-header {
+            font-weight: 600;
+            color: #495057;
+        }
+        .form-container {
+            max-width: 500px;
+            margin: 2rem auto;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .profile-card {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 2rem;
+            margin: 1rem 0;
+        }
+        footer {
+            margin-top: auto;
+            background-color: #f8f9fa;
+            padding: 1rem 0;
+        }
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        main {
+            flex: 1;
+        }
+        /* Mobile navigation improvements */
+        @media (max-width: 991px) {
+            .navbar-nav .nav-link {
+                padding: 0.7rem 1rem;
+                margin: 0.2rem 0;
+            }
+            .dropdown-menu {
+                margin-left: 1rem;
+            }
+        }
+        
+        /* Floating Action Button */
+        .fab-container {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 1000;
+        }
+        
+        .fab-trigger {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,123,255,0.3);
+            transition: all 0.3s ease;
+            user-select: none;
+        }
+        
+        .fab-trigger:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(0,123,255,0.4);
+        }
+        
+        .fab-trigger.active {
+            transform: rotate(45deg);
+        }
+        
+        .fab-menu {
+            position: absolute;
+            bottom: 80px;
+            right: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+        }
+        
+        .fab-menu.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        
+        .fab-item {
+            width: 50px;
+            height: 50px;
+            background: #28a745;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-decoration: none;
+            font-size: 1.2rem;
+            box-shadow: 0 3px 10px rgba(40,167,69,0.3);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .fab-item:hover {
+            color: white;
+            transform: scale(1.1);
+            box-shadow: 0 5px 15px rgba(40,167,69,0.4);
+        }
+        
+        .fab-item:nth-child(2) {
+            background: #17a2b8;
+            box-shadow: 0 3px 10px rgba(23,162,184,0.3);
+        }
+        
+        .fab-item:nth-child(2):hover {
+            box-shadow: 0 5px 15px rgba(23,162,184,0.4);
+        }
+        
+        /* Tooltip for FAB items */
+        .fab-item::before {
+            content: attr(title);
+            position: absolute;
+            right: 60px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            pointer-events: none;
+        }
+        
+        .fab-item:hover::before {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        @media (max-width: 768px) {
+            .fab-container {
+                bottom: 20px;
+                right: 20px;
+            }
+            .fab-trigger {
+                width: 55px;
+                height: 55px;
+                font-size: 1.3rem;
+            }
+            .fab-item {
+                width: 45px;
+                height: 45px;
+                font-size: 1.1rem;
+            }
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark" style="background: linear-gradient(135deg, #1a1a1a, #0f0f0f); border-bottom: 1px solid rgba(255,255,255,0.1);">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'home' %}">
+                <i class="fas fa-chart-line me-2"></i>Trading Journal
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
+                {% if user.is_authenticated %}
+                <!-- Main Navigation Links -->
+                <ul class="navbar-nav mx-auto">
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}" href="{% url 'home' %}">
+                            <i class="fas fa-home me-1"></i>Home
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" href="{% url 'dashboard' %}">
+                            <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle {% if 'trade' in request.resolver_match.url_name %}active{% endif %}" href="#" id="tradesDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-chart-line me-1"></i>Trades
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{% url 'trade_list' %}">
+                                <i class="fas fa-list me-2"></i>View All Trades
+                            </a></li>
+                            <li><a class="dropdown-item" href="{% url 'trade_create' %}">
+                                <i class="fas fa-plus me-2"></i>Add New Trade
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{% url 'journal_dashboard' %}">
+                                <i class="fas fa-chart-bar me-2"></i>Trading Analytics
+                            </a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle {% if 'journal' in request.resolver_match.url_name and 'trade' not in request.resolver_match.url_name %}active{% endif %}" href="#" id="journalDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-book me-1"></i>Journal
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{% url 'journal_list' %}">
+                                <i class="fas fa-list me-2"></i>View All Entries
+                            </a></li>
+                            <li><a class="dropdown-item" href="{% url 'journal_create' %}">
+                                <i class="fas fa-pen me-2"></i>Write New Entry
+                            </a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle {% if request.resolver_match.url_name == 'position_size_calculator' %}active{% endif %}" href="#" id="toolsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-tools me-1"></i>Tools
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{% url 'position_size_calculator' %}">
+                                <i class="fas fa-calculator me-2"></i>Position Size Calculator
+                            </a></li>
+                            <!-- Future tools can be added here -->
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'forum_list' %}active{% endif %}" href="{% url 'forum_list' %}">
+                            <i class="fas fa-users me-1"></i>Forum
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'news_list' %}active{% endif %}" href="{% url 'news_list' %}">
+                            <i class="fas fa-newspaper me-1"></i>News
+                        </a>
+                    </li>
+                </ul>
+                
+                <!-- User Menu -->
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-user me-1"></i>{{ user.get_full_name|default:user.username }}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><h6 class="dropdown-header">
+                                <i class="fas fa-user-circle me-2"></i>{{ user.username }}
+                            </h6></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{% url 'profile' %}">
+                                <i class="fas fa-user-edit me-2"></i>Edit Profile
+                            </a></li>
+                            <li><a class="dropdown-item" href="{% url 'dashboard' %}">
+                                <i class="fas fa-home me-2"></i>Dashboard
+                            </a></li>
+                            {% if user.is_staff %}
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="/admin/" target="_blank">
+                                <i class="fas fa-cog me-2"></i>Admin Panel
+                            </a></li>
+                            {% endif %}
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="{% url 'logout' %}">
+                                <i class="fas fa-sign-out-alt me-2"></i>Logout
+                            </a></li>
+                        </ul>
+                    </li>
+                </ul>
+                {% else %}
+                <!-- Guest Navigation -->
+                <ul class="navbar-nav mx-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'login' %}">
+                            <i class="fas fa-sign-in-alt me-1"></i>Login
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'register' %}">
+                            <i class="fas fa-user-plus me-1"></i>Register
+                        </a>
+                    </li>
+                </ul>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <!-- Messages -->
+    {% if messages %}
+    <div class="container mt-3">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Main Content -->
+    <main class="container my-4">
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <!-- Floating Action Button for Quick Actions -->
+    {% if user.is_authenticated %}
+    <div class="fab-container">
+        <div class="fab-trigger" id="fabTrigger">
+            <i class="fas fa-plus"></i>
+        </div>
+        <div class="fab-menu" id="fabMenu">
+            <a href="{% url 'trade_create' %}" class="fab-item" title="Add New Trade">
+                <i class="fas fa-chart-line"></i>
+            </a>
+            <a href="{% url 'journal_create' %}" class="fab-item" title="Write Journal Entry">
+                <i class="fas fa-pen"></i>
+            </a>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Footer -->
+    <footer class="text-center text-muted">
+        <div class="container">
+            <p>&copy; 2025 Trading Journal. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Floating Action Button Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const fabTrigger = document.getElementById('fabTrigger');
+            const fabMenu = document.getElementById('fabMenu');
+            
+            if (fabTrigger && fabMenu) {
+                fabTrigger.addEventListener('click', function() {
+                    fabTrigger.classList.toggle('active');
+                    fabMenu.classList.toggle('show');
+                });
+                
+                // Close FAB menu when clicking outside
+                document.addEventListener('click', function(event) {
+                    if (!event.target.closest('.fab-container')) {
+                        fabTrigger.classList.remove('active');
+                        fabMenu.classList.remove('show');
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

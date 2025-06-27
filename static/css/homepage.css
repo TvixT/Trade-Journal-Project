@@ -1,0 +1,421 @@
+/* Trading Journal Homepage Dark Theme */
+:root {
+    --bull-green: #00ff88;
+    --bear-red: #ff4757;
+    --dark-bg: #1a1a1a;
+    --darker-bg: #0f0f0f;
+    --gold: #ffd700;
+    --silver: #c0c0c0;
+}
+
+/* Force dark theme with highest specificity */
+html {
+    background: #0f0f0f !important;
+}
+
+body.homepage {
+    background: linear-gradient(135deg, var(--darker-bg) 0%, var(--dark-bg) 100%) !important;
+    color: #ffffff !important;
+    min-height: 100vh !important;
+}
+
+/* Override any existing background styles */
+body.homepage, body.homepage * {
+    color: #ffffff;
+}
+
+/* Make sure the main content area is also dark */
+body.homepage main {
+    background: transparent !important;
+}
+
+body.homepage .container {
+    background: transparent !important;
+}
+
+/* Dark Theme Dropdown Overrides for Homepage */
+body.homepage .dropdown-menu {
+    background-color: #2a2a2a !important;
+    border: 1px solid #404040 !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.6) !important;
+    border-radius: 8px !important;
+}
+
+body.homepage .dropdown-item {
+    color: #ffffff !important;
+    background-color: transparent !important;
+    padding: 0.7rem 1rem !important;
+    transition: all 0.2s ease !important;
+}
+
+body.homepage .dropdown-item:hover,
+body.homepage .dropdown-item:focus {
+    background-color: rgba(255,215,0,0.1) !important;
+    color: #ffd700 !important;
+    transform: translateX(2px) !important;
+}
+
+body.homepage .dropdown-item i {
+    color: #ffd700 !important;
+}
+
+body.homepage .dropdown-header {
+    color: #ffd700 !important;
+    font-weight: 600 !important;
+    background-color: transparent !important;
+}
+
+body.homepage .dropdown-divider {
+    border-color: #404040 !important;
+}
+
+body.homepage .dropdown-item.text-danger {
+    color: #ff4757 !important;
+}
+
+body.homepage .dropdown-item.text-danger:hover {
+    background-color: rgba(255,71,87,0.1) !important;
+    color: #ff4757 !important;
+}
+
+/* Hero Section */
+.hero-section {
+    background: linear-gradient(135deg, rgba(0,0,0,0.8), rgba(26,26,26,0.9));
+    padding: 80px 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><polygon fill="%23ffffff08" points="0,1000 1000,0 1000,1000"/></svg>');
+    pointer-events: none;
+}
+
+.market-indicator {
+    font-size: 6rem;
+    margin-bottom: 20px;
+    animation: pulse 2s infinite;
+}
+
+.bull-mode .market-indicator {
+    color: var(--bull-green);
+    text-shadow: 0 0 30px var(--bull-green);
+}
+
+.bear-mode .market-indicator {
+    color: var(--bear-red);
+    text-shadow: 0 0 30px var(--bear-red);
+}
+
+.neutral-mode .market-indicator {
+    color: var(--gold);
+    text-shadow: 0 0 30px var(--gold);
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.hero-title {
+    font-size: 3.5rem;
+    font-weight: 900;
+    background: linear-gradient(45deg, var(--bull-green), var(--bear-red), var(--gold));
+    background-size: 200% 200%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: gradient-shift 3s ease infinite;
+    margin-bottom: 20px;
+}
+
+@keyframes gradient-shift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+.hero-subtitle {
+    font-size: 1.3rem;
+    color: #cccccc;
+    font-weight: 300;
+    margin-bottom: 40px;
+}
+
+/* Market Cards */
+.market-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+    padding: 60px 0;
+}
+
+.market-card {
+    background: rgba(255,255,255,0.05);
+    border-radius: 20px;
+    padding: 40px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.1);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.market-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--bull-green), var(--bear-red));
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+}
+
+.market-card:hover::before {
+    transform: scaleX(1);
+}
+
+.market-card:hover {
+    transform: translateY(-10px);
+    background: rgba(255,255,255,0.1);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+}
+
+.card-icon {
+    font-size: 3rem;
+    margin-bottom: 20px;
+    display: block;
+}
+
+.bull-card .card-icon {
+    color: var(--bull-green);
+}
+
+.bear-card .card-icon {
+    color: var(--bear-red);
+}
+
+.neutral-card .card-icon {
+    color: var(--gold);
+}
+
+.card-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 15px;
+    color: #ffffff;
+}
+
+.card-description {
+    color: #cccccc;
+    line-height: 1.6;
+    margin-bottom: 25px;
+}
+
+/* CTA Buttons */
+.cta-button {
+    display: inline-block;
+    padding: 15px 35px;
+    background: linear-gradient(45deg, var(--bull-green), #00cc6a);
+    color: #000000;
+    text-decoration: none;
+    border-radius: 50px;
+    font-weight: 700;
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.cta-button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px rgba(0,255,136,0.3);
+    color: #000000;
+    text-decoration: none;
+}
+
+.cta-button-secondary {
+    background: linear-gradient(45deg, var(--gold), #ffdd00);
+    color: #000000;
+    border: 2px solid var(--gold);
+    display: inline-block;
+    padding: 15px 35px;
+    text-decoration: none;
+    border-radius: 50px;
+    font-weight: 700;
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.cta-button-secondary:hover {
+    background: linear-gradient(45deg, #ffdd00, #ffe135);
+    color: #000000;
+    box-shadow: 0 10px 30px rgba(255,215,0,0.3);
+    transform: translateY(-3px);
+    text-decoration: none;
+}
+
+/* Stats Section */
+.stats-section {
+    background: rgba(0,0,0,0.3);
+    padding: 60px 0;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.stat-item {
+    text-align: center;
+    padding: 20px;
+}
+
+.stat-number {
+    font-size: 3rem;
+    font-weight: 900;
+    margin-bottom: 10px;
+    background: linear-gradient(45deg, var(--bull-green), var(--gold));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.stat-label {
+    color: #cccccc;
+    font-size: 1.1rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Features Grid */
+.features-section {
+    padding: 80px 0;
+}
+
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 40px;
+    margin-top: 50px;
+}
+
+.feature-item {
+    text-align: center;
+    padding: 30px 20px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 15px;
+    border: 1px solid rgba(255,255,255,0.1);
+    transition: all 0.3s ease;
+}
+
+.feature-item:hover {
+    background: rgba(255,255,255,0.08);
+    transform: translateY(-5px);
+}
+
+.feature-icon {
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+    color: var(--bull-green);
+}
+
+.feature-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 15px;
+    color: #ffffff;
+}
+
+.feature-description {
+    color: #cccccc;
+    line-height: 1.5;
+}
+
+/* Floating particles animation */
+.particles {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.particle {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: var(--bull-green);
+    border-radius: 50%;
+    animation: float 6s linear infinite;
+    opacity: 0.3;
+}
+
+.particle:nth-child(even) {
+    background: var(--bear-red);
+    animation-duration: 8s;
+}
+
+.particle:nth-child(3n) {
+    background: var(--gold);
+    animation-duration: 10s;
+}
+
+@keyframes float {
+    0% {
+        transform: translateY(100vh) rotate(0deg);
+        opacity: 0;
+    }
+    10% {
+        opacity: 0.3;
+    }
+    90% {
+        opacity: 0.3;
+    }
+    100% {
+        transform: translateY(-100px) rotate(360deg);
+        opacity: 0;
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .hero-title {
+        font-size: 2.5rem;
+    }
+    
+    .market-indicator {
+        font-size: 4rem;
+    }
+    
+    .market-cards {
+        grid-template-columns: 1fr;
+        gap: 20px;
+        padding: 40px 0;
+    }
+    
+    .market-card {
+        padding: 30px 20px;
+    }
+}
+
+/* Ripple animation */
+@keyframes ripple {
+    to {
+        transform: scale(2);
+        opacity: 0;
+    }
+}

@@ -1,0 +1,162 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+{% block title %}{{ thread.title }} - Forum{% endblock %}
+{% block content %}
+<div class="forum-bg-dark container py-4">
+    <div class="forum-thread-header mb-4">
+        <div class="d-flex align-items-center">
+            <span class="forum-thread-icon me-3"><i class="fas fa-comments"></i></span>
+            <div>
+                <h2 class="mb-0 forum-thread-title">{{ thread.title }}</h2>
+                <div class="small text-muted mt-1">Started by <span class="text-bull">{{ thread.creator }}</span> &middot; {{ thread.created_at|date:"M d, Y H:i" }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="forum-posts-list mb-4">
+        {% if page_obj.object_list %}
+            {% for post in page_obj.object_list %}
+            <div class="forum-post-card mb-3">
+                <div class="d-flex align-items-center mb-2">
+                    <span class="forum-post-user text-bull me-2"><i class="fas fa-user-circle"></i> {{ post.author }}</span>
+                    <span class="forum-post-date small text-muted">{{ post.created_at|date:"M d, Y H:i" }}</span>
+                </div>
+                <div class="forum-post-content">{{ post.content|linebreaksbr }}</div>
+            </div>
+            {% endfor %}
+            <nav class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a></li>
+                    {% endif %}
+                    <li class="page-item disabled"><span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+                    {% if page_obj.has_next %}
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-comment-slash fa-2x text-bear mb-2"></i>
+            <h5 class="text-bear">No posts yet. Be the first to reply!</h5>
+        </div>
+        {% endif %}
+    </div>
+    <div class="forum-reply-card mb-5">
+        <h5 class="forum-reply-title mb-3"><i class="fas fa-reply me-2"></i>Reply to Thread</h5>
+        <form method="post" novalidate>
+            {% csrf_token %}
+            {{ post_form.content|add_class:'form-control form-control-theme forum-reply-textarea' }}
+            {% if post_form.content.errors %}
+                <div class="text-danger small mt-2">{% for error in post_form.content.errors %}<div>{{ error }}</div>{% endfor %}</div>
+            {% endif %}
+            <div class="d-grid mt-3">
+                <button type="submit" class="btn btn-bullbear btn-lg forum-reply-btn"><i class="fas fa-paper-plane me-2"></i>Post Reply</button>
+            </div>
+        </form>
+    </div>
+</div>
+<style>
+body, .forum-bg-dark {
+    background: #111 !important;
+}
+.forum-bg-dark {
+    min-height: 100vh;
+    padding-bottom: 2rem;
+}
+.forum-thread-header {
+    background: linear-gradient(90deg, #181a1b 60%, #111 100%);
+    border-radius: 16px;
+    padding: 1.5rem 2rem 1rem 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.18);
+    border-top: 5px solid #00C851;
+}
+.forum-thread-icon {
+    font-size: 2.5rem;
+    color: #00C851;
+    background: #181a1b;
+    border-radius: 50%;
+    padding: 0.5rem 0.7rem;
+    box-shadow: 0 0 0 4px #FF4444;
+}
+.forum-thread-title {
+    color: #FFD700;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-shadow: 0 2px 8px #000;
+}
+.forum-posts-list {
+    margin-bottom: 2rem;
+}
+.forum-post-card {
+    background: linear-gradient(135deg, #181a1b 0%, #23272b 100%);
+    border-radius: 12px;
+    border: 1.5px solid #404040;
+    box-shadow: 0 2px 8px rgba(0,200,81,0.08), 0 2px 8px rgba(255,68,68,0.08);
+    padding: 1.25rem 1.5rem;
+    color: #e0e0e0;
+    transition: box-shadow 0.2s, transform 0.2s;
+    position: relative;
+}
+.forum-post-card:hover {
+    box-shadow: 0 6px 24px rgba(0,200,81,0.18), 0 6px 24px rgba(255,68,68,0.18);
+    transform: translateY(-2px) scale(1.01);
+}
+.forum-post-user {
+    font-weight: 600;
+    color: #00C851 !important;
+}
+.forum-post-date {
+    color: #888 !important;
+}
+.forum-post-content {
+    font-size: 1.08rem;
+    color: #e0e0e0;
+    margin-left: 2.2rem;
+    margin-top: 0.2rem;
+}
+.forum-reply-title {
+    color: #FFD700;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-shadow: 0 2px 8px #000;
+}
+.forum-reply-card {
+    background: linear-gradient(135deg, #181a1b 80%, #23272b 100%);
+    border: 1.5px solid #404040;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,200,81,0.08), 0 2px 8px rgba(255,68,68,0.08);
+    padding: 2rem 2rem 1.5rem 2rem;
+    margin-bottom: 2rem;
+}
+.forum-reply-textarea {
+    background: #23272b !important;
+    color: #e0e0e0 !important;
+    border: 1.5px solid #404040 !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    font-size: 1.08rem;
+    transition: border 0.2s, box-shadow 0.2s;
+}
+.forum-reply-textarea:focus {
+    border: 1.5px solid #FFD700 !important;
+    box-shadow: 0 0 8px #FFD70044 !important;
+    background: #23272b !important;
+    color: #FFD700 !important;
+}
+.forum-reply-btn {
+    background: linear-gradient(90deg, #00C851 0%, #FFD700 100%) !important;
+    color: #181a1a !important;
+    font-weight: 700;
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px #00C85144;
+    transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+}
+.forum-reply-btn:hover {
+    background: linear-gradient(90deg, #FFD700 0%, #00C851 100%) !important;
+    color: #181a1a !important;
+    box-shadow: 0 4px 16px #FFD70044;
+}
+</style>
+{% endblock %}

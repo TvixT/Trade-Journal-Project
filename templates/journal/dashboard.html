@@ -1,0 +1,334 @@
+{% extends 'base.html' %}
+
+{% block title %}Trading Journal Dashboard{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active" aria-current="page">
+    <i class="fas fa-chart-bar me-1"></i>Analytics
+</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+            <div>
+                <h1 class="dashboard-title">
+                    <i class="fas fa-chart-line me-3"></i>Trading Command Center
+                </h1>
+                <p class="text-muted">Welcome back, {{ user.get_full_name|default:user.username }}! Time to conquer the markets.</p>
+            </div>
+            <form method="get" class="d-flex align-items-center gap-2 dashboard-filter-form bg-dark p-2 rounded-3 shadow-sm" style="min-width:320px;">
+                <label for="time_filter" class="me-2 text-gold fw-bold"><i class="fas fa-filter me-1"></i>Period:</label>
+                <select name="time_filter" id="time_filter" class="form-select form-select-sm dashboard-filter-select">
+                    <option value="all" {% if time_filter == 'all' %}selected{% endif %}>All Time</option>
+                    <option value="last_month" {% if time_filter == 'last_month' %}selected{% endif %}>Last Month</option>
+                    <option value="this_month" {% if time_filter == 'this_month' %}selected{% endif %}>This Month</option>
+                    <option value="custom" {% if time_filter == 'custom' %}selected{% endif %}>Custom</option>
+                </select>
+                <input type="date" name="start_date" class="form-control form-control-sm dashboard-filter-date" value="{{ start_date|default:'' }}" {% if time_filter != 'custom' %}style="display:none;"{% endif %} placeholder="Start" />
+                <span class="text-gold">-</span>
+                <input type="date" name="end_date" class="form-control form-control-sm dashboard-filter-date" value="{{ end_date|default:'' }}" {% if time_filter != 'custom' %}style="display:none;"{% endif %} placeholder="End" />
+                <button type="submit" class="btn btn-gradient-gold btn-sm ms-2"><i class="fas fa-search"></i></button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card stats-card text-center h-100">
+            <div class="card-body">
+                <i class="fas fa-exchange-alt fa-3x text-primary mb-3"></i>
+                <h5 class="card-title">Total Trades</h5>
+                <h2 class="text-primary">{{ total_trades }}</h2>
+                <p class="text-muted">
+                    <span class="badge bg-success">{{ open_trades }} Open</span>
+                    <span class="badge bg-secondary">{{ closed_trades }} Closed</span>
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card stats-card text-center h-100">
+            <div class="card-body">
+                <i class="fas fa-dollar-sign fa-3x text-{% if total_pnl >= 0 %}success{% else %}danger{% endif %} mb-3"></i>
+                <h5 class="card-title">Total P&L</h5>
+                <h2 class="text-{% if total_pnl >= 0 %}success{% else %}danger{% endif %}">
+                    ${{ total_pnl|floatformat:2 }}
+                </h2>
+                <p class="text-muted">Realized profits/losses</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card stats-card text-center h-100">
+            <div class="card-body">
+                <i class="fas fa-percentage fa-3x text-info mb-3"></i>
+                <h5 class="card-title">Win Rate</h5>
+                <h2 class="text-info">{{ win_rate }}%</h2>
+                <p class="text-muted">Success rate on closed trades</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card stats-card text-center h-100">
+            <div class="card-body">
+                <i class="fas fa-book fa-3x text-warning mb-3"></i>
+                <h5 class="card-title">Journal Entries</h5>
+                <h2 class="text-warning">{{ total_entries }}</h2>
+                <p class="text-muted">
+                    {% if avg_rating > 0 %}
+                        Avg rating: {{ avg_rating }}/5
+                    {% else %}
+                        No ratings yet
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activity -->
+<div class="row">
+    <!-- Recent Trades -->
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-history me-2"></i>Recent Trades
+                </h5>
+                <a href="{% url 'trade_list' %}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body">
+                {% if recent_trades %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Symbol</th>
+                                    <th>Type</th>
+                                    <th>Entry</th>
+                                    <th>P&L</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for trade in recent_trades %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'trade_detail' trade.pk %}" class="text-decoration-none">
+                                            <strong>{{ trade.symbol }}</strong>
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{ trade.position_type|lower }}">
+                                            {{ trade.get_position_type_display }}
+                                        </span>
+                                    </td>
+                                    <td>${{ trade.entry_price }}</td>
+                                    <td>
+                                        {% if not trade.is_open %}
+                                            <span class="text-{% if trade.profit_loss >= 0 %}success{% else %}danger{% endif %}">
+                                                ${{ trade.profit_loss|floatformat:2 }}
+                                            </span>
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if trade.is_open %}
+                                            <span class="badge bg-success">Open</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Closed</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-chart-line fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No trades recorded yet</p>
+                        <a href="{% url 'trade_create' %}" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>Add Your First Trade
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Journal Entries -->
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-pen me-2"></i>Recent Journal Entries
+                </h5>
+                <a href="{% url 'journal_list' %}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body">
+                {% if recent_entries %}
+                    {% for entry in recent_entries %}
+                    <div class="border-bottom pb-3 mb-3">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6 class="mb-1">
+                                    <a href="{% url 'journal_detail' entry.pk %}" class="text-decoration-none">
+                                        {{ entry.title|truncatechars:40 }}
+                                    </a>
+                                </h6>
+                                <p class="text-muted small mb-1">{{ entry.content|truncatechars:80 }}</p>
+                                <small class="text-muted">
+                                    {{ entry.entry_date|date:"M d, Y" }}
+                                    {% if entry.mood %}
+                                        • {{ entry.get_mood_display }}
+                                    {% endif %}
+                                    {% if entry.rating %}
+                                        • {{ entry.rating_stars }}
+                                    {% endif %}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-book fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No journal entries yet</p>
+                        <a href="{% url 'journal_create' %}" class="btn btn-primary">
+                            <i class="fas fa-pen me-2"></i>Write Your First Entry
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-bolt me-2"></i>Quick Actions
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-2">
+                        <a href="{% url 'trade_create' %}" class="btn btn-outline-success w-100">
+                            <i class="fas fa-plus me-2"></i>Add Trade
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <a href="{% url 'journal_create' %}" class="btn btn-outline-primary w-100">
+                            <i class="fas fa-pen me-2"></i>New Journal Entry
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <a href="{% url 'trade_list' %}" class="btn btn-outline-info w-100">
+                            <i class="fas fa-list me-2"></i>View All Trades
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <a href="{% url 'journal_list' %}" class="btn btn-outline-warning w-100">
+                            <i class="fas fa-book me-2"></i>Journal Entries
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Show/hide custom date fields based on filter
+const filterSelect = document.getElementById('time_filter');
+if (filterSelect) {
+    filterSelect.addEventListener('change', function() {
+        const show = this.value === 'custom';
+        document.querySelectorAll('.dashboard-filter-date').forEach(el => {
+            el.style.display = show ? '' : 'none';
+        });
+    });
+}
+</script>
+
+<style>
+.dashboard-title {
+    color: var(--gold, #FFD700);
+    font-weight: 900;
+    font-size: 2.2rem;
+    letter-spacing: 0.5px;
+    background: linear-gradient(45deg, var(--gold, #FFD700), var(--bull-green, #00C851));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.dashboard-filter-form {
+    background: linear-gradient(135deg, #232323 0%, #2a2a2a 100%);
+    border: 1.5px solid var(--border-color, #404040);
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+}
+.dashboard-filter-select, .dashboard-filter-date {
+    background: #232323 !important;
+    color: var(--light-text, #e0e0e0) !important;
+    border: 1.5px solid var(--border-color, #404040) !important;
+    border-radius: 6px !important;
+    font-weight: 600;
+    min-width: 110px;
+}
+.dashboard-filter-select:focus, .dashboard-filter-date:focus {
+    border-color: var(--gold, #FFD700) !important;
+    box-shadow: 0 0 0 2px rgba(255,215,0,0.15) !important;
+    color: var(--gold, #FFD700) !important;
+}
+.btn-gradient-gold {
+    background: linear-gradient(90deg, #FFD700 60%, #fffbe6 100%);
+    color: #232323 !important;
+    border: none;
+    font-weight: 700;
+    box-shadow: 0 2px 8px rgba(255,215,0,0.12);
+    transition: box-shadow 0.2s, transform 0.2s;
+}
+.btn-gradient-gold:hover {
+    box-shadow: 0 4px 16px rgba(255,215,0,0.22);
+    transform: translateY(-2px) scale(1.03);
+}
+.stats-card {
+    border: none;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    border-radius: 8px;
+    transition: transform 0.2s;
+}
+
+.stats-card:hover {
+    transform: translateY(-2px);
+}
+
+.table th {
+    border-top: none;
+    font-weight: 600;
+    color: #6c757d;
+    font-size: 0.875rem;
+}
+
+.badge.bg-buy {
+    background-color: #198754 !important;
+}
+
+.badge.bg-sell {
+    background-color: #dc3545 !important;
+}
+</style>
+{% endblock %}

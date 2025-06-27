@@ -1,0 +1,386 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ entry.title }} - Trading Journal{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-start mb-4">
+            <div>
+                <h1 class="fw-bold text-gold journal-title">{{ entry.title }}</h1>
+                <p class="text-muted mb-0">
+                    <i class="fas fa-calendar me-2 text-gold"></i>{{ entry.entry_date|date:"F d, Y" }}
+                    {% if entry.trade %}
+                        • <i class="fas fa-chart-line me-1 text-bull"></i>Related to trade:
+                        <a href="{% url 'trade_detail' entry.trade.pk %}" class="text-decoration-none text-bull fw-bold">
+                            {{ entry.trade.symbol }}
+                        </a>
+                    {% endif %}
+                </p>
+            </div>
+            <div>
+                <a href="{% url 'journal_update' entry.pk %}" class="btn btn-gradient-gold me-2">
+                    <i class="fas fa-edit me-2"></i>Edit Entry
+                </a>
+                <a href="{% url 'journal_list' %}" class="btn btn-outline-secondary btn-gradient-neutral">
+                    <i class="fas fa-arrow-left me-2"></i>Back to List
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Entry Metadata -->
+<div class="row mb-4 g-3">
+    {% if entry.rating %}
+    <div class="col-md-3 col-6">
+        <div class="card kpi-card card-glass text-center h-100">
+            <div class="card-body">
+                <i class="fas fa-star fa-2x text-gold mb-2"></i>
+                <h6 class="text-muted">Rating</h6>
+                <h4 class="text-gold">{{ entry.rating_stars }}</h4>
+                <small class="text-muted">{{ entry.rating }}/5 stars</small>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    {% if entry.mood %}
+    <div class="col-md-3 col-6">
+        <div class="card kpi-card card-glass text-center h-100">
+            <div class="card-body">
+                <i class="fas fa-smile fa-2x text-bull mb-2"></i>
+                <h6 class="text-muted">Mood</h6>
+                <h5 class="text-bull">{{ entry.get_mood_display }}</h5>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    {% if entry.strategy_used %}
+    <div class="col-md-3 col-6">
+        <div class="card kpi-card card-glass text-center h-100">
+            <div class="card-body">
+                <i class="fas fa-lightbulb fa-2x text-gold mb-2"></i>
+                <h6 class="text-muted">Strategy</h6>
+                <h6 class="text-gold">{{ entry.strategy_used }}</h6>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    {% if entry.tag_list %}
+    <div class="col-md-3 col-6">
+        <div class="card kpi-card card-glass text-center h-100">
+            <div class="card-body">
+                <i class="fas fa-tags fa-2x text-neutral mb-2"></i>
+                <h6 class="text-muted">Tags</h6>
+                <div>
+                    {% for tag in entry.tag_list %}
+                    <span class="badge badge-trading me-1">#{{ tag }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Main Content -->
+<div class="row mb-4 g-4">
+    <div class="col-md-8">
+        <div class="card card-glass mb-4">
+            <div class="card-header card-header-dark">
+                <h5 class="mb-0 text-gold"><i class="fas fa-file-alt me-2"></i>Journal Content</h5>
+            </div>
+            <div class="card-body">
+                <div class="journal-content">
+                    {{ entry.content|linebreaks }}
+                </div>
+            </div>
+        </div>
+        {% if entry.market_conditions %}
+        <div class="card card-glass mb-4">
+            <div class="card-header card-header-dark">
+                <h5 class="mb-0 text-bull"><i class="fas fa-chart-area me-2"></i>Market Conditions</h5>
+            </div>
+            <div class="card-body">
+                <div class="market-conditions">
+                    {{ entry.market_conditions|linebreaks }}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        {% if entry.lessons_learned %}
+        <div class="card card-glass mb-4">
+            <div class="card-header card-header-dark">
+                <h5 class="mb-0 text-gold"><i class="fas fa-graduation-cap me-2"></i>Lessons Learned</h5>
+            </div>
+            <div class="card-body">
+                <div class="lessons-learned">
+                    {{ entry.lessons_learned|linebreaks }}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    <div class="col-md-4">
+        <!-- Quick Actions -->
+        <div class="card card-glass mb-3">
+            <div class="card-header card-header-dark">
+                <h5 class="mb-0 text-gold"><i class="fas fa-bolt me-2"></i>Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{% url 'journal_update' entry.pk %}" class="btn btn-gradient-gold">
+                        <i class="fas fa-edit me-2"></i>Edit Entry
+                    </a>
+                    {% if entry.trade %}
+                    <a href="{% url 'trade_detail' entry.trade.pk %}" class="btn btn-gradient-bull">
+                        <i class="fas fa-chart-line me-2"></i>View Related Trade
+                    </a>
+                    {% else %}
+                    <a href="{% url 'trade_create' %}" class="btn btn-gradient-neutral">
+                        <i class="fas fa-plus me-2"></i>Create Related Trade
+                    </a>
+                    {% endif %}
+                    <a href="{% url 'journal_create' %}" class="btn btn-gradient-bull">
+                        <i class="fas fa-pen me-2"></i>New Entry
+                    </a>
+                    <hr>
+                    <a href="{% url 'journal_delete' entry.pk %}" class="btn btn-gradient-bear">
+                        <i class="fas fa-trash me-2"></i>Delete Entry
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% if entry.trade %}
+        <div class="card card-glass mb-3">
+            <div class="card-header card-header-dark">
+                <h6 class="mb-0 text-bull"><i class="fas fa-chart-line me-2"></i>Related Trade</h6>
+            </div>
+            <div class="card-body">
+                <h6>
+                    <a href="{% url 'trade_detail' entry.trade.pk %}" class="text-decoration-none text-bull fw-bold">
+                        {{ entry.trade.symbol }}
+                    </a>
+                </h6>
+                <p class="mb-2">
+                    <span class="badge badge-trading bg-{{ entry.trade.position_type|lower }}">
+                        {{ entry.trade.get_position_type_display }}
+                    </span>
+                </p>
+                <table class="table table-sm table-borderless text-light">
+                    <tr>
+                        <td><strong>Entry:</strong></td>
+                        <td>${{ entry.trade.entry_price|floatformat:4 }}</td>
+                    </tr>
+                    {% if entry.trade.exit_price %}
+                    <tr>
+                        <td><strong>Exit:</strong></td>
+                        <td>${{ entry.trade.exit_price|floatformat:4 }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>P&L:</strong></td>
+                        <td class="text-{% if entry.trade.profit_loss >= 0 %}bull{% else %}bear{% endif %}">
+                            ${{ entry.trade.profit_loss|floatformat:2 }}
+                        </td>
+                    </tr>
+                    {% endif %}
+                    <tr>
+                        <td><strong>Status:</strong></td>
+                        <td>
+                            {% if entry.trade.status == 'open' %}
+                                <span class="badge badge-trading bg-bull">Open</span>
+                            {% else %}
+                                <span class="badge badge-trading bg-neutral">Closed</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+        <div class="card card-glass mb-3">
+            <div class="card-header card-header-dark">
+                <h6 class="mb-0 text-gold"><i class="fas fa-info-circle me-2"></i>Entry Information</h6>
+            </div>
+            <div class="card-body">
+                <table class="table table-sm table-borderless text-light">
+                    <tr>
+                        <td><strong>Created:</strong></td>
+                        <td>{{ entry.created_at|date:"M d, Y H:i" }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Updated:</strong></td>
+                        <td>{{ entry.updated_at|date:"M d, Y H:i" }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Author:</strong></td>
+                        <td>{{ entry.user.get_full_name|default:entry.user.username }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        {% if entry.tag_list %}
+        <div class="card card-glass mb-3">
+            <div class="card-header card-header-dark">
+                <h6 class="mb-0 text-neutral"><i class="fas fa-search me-2"></i>Similar Entries</h6>
+            </div>
+            <div class="card-body">
+                <p class="text-muted small">Find entries with similar tags:</p>
+                {% for tag in entry.tag_list %}
+                <a href="{% url 'journal_list' %}?search={{ tag }}" class="btn btn-sm btn-gradient-neutral me-1 mb-1">
+                    #{{ tag }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+body {
+    background: var(--dark-bg, #1a1a1a) !important;
+    color: var(--light-text, #e0e0e0) !important;
+    min-height: 100vh;
+}
+#content, .container, .row, .col-md-8, .col-md-4, .col-12 {
+    background: transparent !important;
+}
+.card.card-glass {
+    background: rgba(42,42,42,0.98);
+    border: 1.5px solid var(--border-color, #404040);
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.45), 0 1.5px 0 var(--gold, #FFD700);
+    backdrop-filter: blur(6px);
+    transition: box-shadow 0.3s, transform 0.3s;
+    overflow: hidden;
+}
+.card.card-glass:hover {
+    box-shadow: 0 8px 32px 0 rgba(255,215,0,0.18), 0 2px 0 var(--gold, #FFD700);
+    transform: translateY(-4px) scale(1.01);
+    border-color: var(--gold, #FFD700);
+}
+.card-header-dark {
+    background: linear-gradient(90deg, #232323 60%, #2a2a2a 100%);
+    border-bottom: 1.5px solid var(--border-color, #404040);
+}
+.text-gold { color: var(--gold, #FFD700) !important; }
+.text-bull { color: var(--bull-green, #00C851) !important; }
+.text-bear { color: var(--bear-red, #FF4444) !important; }
+.text-neutral { color: var(--neutral-blue, #2E86AB) !important; }
+
+.btn-gradient-gold {
+    background: linear-gradient(90deg, #FFD700 60%, #fffbe6 100%);
+    color: #232323 !important;
+    border: none;
+    font-weight: 700;
+    box-shadow: 0 2px 8px rgba(255,215,0,0.12);
+    transition: box-shadow 0.2s, transform 0.2s;
+}
+.btn-gradient-gold:hover {
+    box-shadow: 0 4px 16px rgba(255,215,0,0.22);
+    transform: translateY(-2px) scale(1.03);
+}
+.btn-gradient-bull {
+    background: linear-gradient(90deg, #00C851 60%, #00ff88 100%);
+    color: #232323 !important;
+    border: none;
+    font-weight: 700;
+    box-shadow: 0 2px 8px rgba(0,200,81,0.12);
+    transition: box-shadow 0.2s, transform 0.2s;
+}
+.btn-gradient-bull:hover {
+    box-shadow: 0 4px 16px rgba(0,200,81,0.22);
+    transform: translateY(-2px) scale(1.03);
+}
+.btn-gradient-bear {
+    background: linear-gradient(90deg, #FF4444 60%, #ff6b6b 100%);
+    color: #232323 !important;
+    border: none;
+    font-weight: 700;
+    box-shadow: 0 2px 8px rgba(255,68,68,0.12);
+    transition: box-shadow 0.2s, transform 0.2s;
+}
+.btn-gradient-bear:hover {
+    box-shadow: 0 4px 16px rgba(255,68,68,0.22);
+    transform: translateY(-2px) scale(1.03);
+}
+.btn-gradient-neutral {
+    background: linear-gradient(90deg, #2E86AB 60%, #5fa8d3 100%);
+    color: #fff !important;
+    border: none;
+    font-weight: 700;
+    box-shadow: 0 2px 8px rgba(46,134,171,0.12);
+    transition: box-shadow 0.2s, transform 0.2s;
+}
+.btn-gradient-neutral:hover {
+    box-shadow: 0 4px 16px rgba(46,134,171,0.22);
+    transform: translateY(-2px) scale(1.03);
+}
+.badge-trading {
+    font-size: 0.95em;
+    font-weight: 600;
+    border-radius: 8px;
+    padding: 0.4em 0.9em;
+    margin-bottom: 2px;
+    background: linear-gradient(90deg, #232323 60%, #2a2a2a 100%);
+    color: var(--gold, #FFD700);
+    border: 1.5px solid var(--gold, #FFD700);
+    box-shadow: 0 1px 4px rgba(255,215,0,0.08);
+    text-shadow: 0 1px 2px #000;
+    transition: background 0.2s, color 0.2s;
+}
+.badge-trading.bg-bull {
+    background: linear-gradient(90deg, #00C851 60%, #00ff88 100%);
+    color: #232323;
+    border-color: #00C851;
+}
+.badge-trading.bg-bear {
+    background: linear-gradient(90deg, #FF4444 60%, #ff6b6b 100%);
+    color: #232323;
+    border-color: #FF4444;
+}
+.badge-trading.bg-neutral {
+    background: linear-gradient(90deg, #2E86AB 60%, #5fa8d3 100%);
+    color: #fff;
+    border-color: #2E86AB;
+}
+.kpi-card {
+    min-height: 140px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.18);
+    border-top: 3px solid var(--gold, #FFD700);
+    transition: box-shadow 0.2s, border-top 0.2s;
+}
+.kpi-card:hover {
+    box-shadow: 0 6px 24px rgba(255,215,0,0.18);
+    border-top: 3px solid var(--bull-green, #00C851);
+}
+.journal-title {
+    font-size: 2.2rem;
+    background: linear-gradient(45deg, var(--gold, #FFD700), var(--bull-green, #00C851));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.table td, .table th {
+    color: var(--light-text, #e0e0e0) !important;
+    border: none;
+    padding: 0.35rem 0.5rem;
+}
+.table th {
+    font-weight: 600;
+    color: #FFD700 !important;
+}
+@media (max-width: 991px) {
+    .kpi-card { min-height: 120px; }
+    .journal-title { font-size: 1.5rem; }
+}
+@media (max-width: 767px) {
+    .kpi-card { min-height: 90px; }
+    .journal-title { font-size: 1.1rem; }
+}
+</style>
+{% endblock %}

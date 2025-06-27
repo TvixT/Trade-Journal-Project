@@ -1,0 +1,486 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard - Trading Journal{% endblock %}
+
+{% block extra_css %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+{% endblock %}
+
+{% block content %}
+<body class="dashboard-theme">
+<div class="dashboard-container">
+    <div class="row">
+        <div class="col-12">
+            <div class="dashboard-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h1 class="dashboard-title">
+                            <i class="fas fa-chart-line me-3"></i>Trading Command Center
+                        </h1>
+                        <p class="text-muted">Welcome back, {{ user.get_full_name|default:user.username }}! Time to conquer the markets.</p>
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Primary KPI Cards -->
+    <div class="row">
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="dashboard-card text-center h-100">
+                <div class="card-body">
+                    <i class="fas fa-chart-line fa-3x text-bull mb-3"></i>
+                    <h5 class="card-title text-gold">Total Trades</h5>
+                    <h2 class="kpi-value text-bull">{{ total_trades }}</h2>
+                    <p class="text-muted">All time positions</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="dashboard-card text-center h-100 {% if total_pnl >= 0 %}pulse-bull{% else %}pulse-bear{% endif %}">
+                <div class="card-body">
+                    <i class="fas fa-dollar-sign fa-3x text-{% if total_pnl >= 0 %}bull{% else %}bear{% endif %} mb-3"></i>
+                    <h5 class="card-title text-gold">Total P&L</h5>
+                    <h2 class="kpi-value text-{% if total_pnl >= 0 %}bull{% else %}bear{% endif %}">${{ total_pnl|floatformat:2 }}</h2>
+                    <p class="text-muted">{% if total_pnl >= 0 %}Bull run profits{% else %}Bear market losses{% endif %}</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4 col-md-12 mb-4">
+            <div class="dashboard-card text-center h-100">
+                <div class="card-body">
+                    <i class="fas fa-percentage fa-3x text-neutral mb-3"></i>
+                    <h5 class="card-title text-gold">Win Rate</h5>
+                    <h2 class="kpi-value text-{% if win_rate >= 70 %}bull{% elif win_rate >= 50 %}neutral{% else %}bear{% endif %}">{{ win_rate }}%</h2>
+                    <p class="text-muted">Success ratio</p>
+                    <div class="progress mt-2" style="height: 6px;">
+                        <div class="progress-bar" role="progressbar" style="width: {{ win_rate }}%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Advanced KPIs -->
+    <div class="row">
+        <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+            <div class="dashboard-card-small text-center h-100">
+                <div class="card-body py-3">
+                    <h6 class="card-title mb-1 text-gold">Avg Profit</h6>
+                    <h5 class="kpi-value-small text-bull mb-1">${{ avg_profit|floatformat:2 }}</h5>
+                    <small class="text-muted">Per win</small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+            <div class="dashboard-card-small text-center h-100">
+                <div class="card-body py-3">
+                    <h6 class="card-title mb-1 text-gold">Avg Loss</h6>
+                    <h5 class="kpi-value-small text-bear mb-1">${{ avg_loss|floatformat:2 }}</h5>
+                    <small class="text-muted">Per loss</small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+            <div class="dashboard-card-small text-center h-100">
+                <div class="card-body py-3">
+                    <h6 class="card-title mb-1 text-gold">Avg R:R</h6>
+                    <h5 class="kpi-value-small text-{% if avg_rr >= 2 %}bull{% elif avg_rr >= 1 %}neutral{% else %}bear{% endif %} mb-1">{{ avg_rr }}</h5>
+                    <small class="text-muted">Risk:Reward</small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+            <div class="dashboard-card-small text-center h-100">
+                <div class="card-body py-3">
+                    <h6 class="card-title mb-1 text-gold">Max Wins</h6>
+                    <h5 class="kpi-value-small text-bull mb-1">{{ max_consecutive_wins }}</h5>
+                    <small class="text-muted">Streak</small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+            <div class="dashboard-card-small text-center h-100">
+                <div class="card-body py-3">
+                    <h6 class="card-title mb-1 text-gold">Max Losses</h6>
+                    <h5 class="kpi-value-small text-bear mb-1">{{ max_consecutive_losses }}</h5>
+                    <small class="text-muted">Drawdown</small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+            <div class="dashboard-card-small text-center h-100">
+                <div class="card-body py-3">
+                    <h6 class="card-title mb-1 text-gold">Open Trades</h6>
+                    <h5 class="kpi-value-small text-neutral mb-1">{{ open_trades_count }}</h5>
+                    <small class="text-muted">Active</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<!-- Charts Section -->
+{% if has_trades %}
+<div class="row">
+    <div class="col-lg-8 mb-4">
+        <div class="card dashboard-card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-line me-2"></i>P&L Over Time (Last 30 Days)
+                </h5>
+            </div>
+            <div class="card-body">
+                <div style="height: 300px;">
+                    <canvas id="pnlChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4 mb-4">
+        <div class="card dashboard-card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-pie me-2"></i>Trade Distribution
+                </h5>
+            </div>
+            <div class="card-body">
+                <div style="height: 300px;">
+                    <canvas id="distributionChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-6 mb-4">
+        <div class="card dashboard-card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-bar me-2"></i>Asset Distribution
+                </h5>
+            </div>
+            <div class="card-body">
+                <div style="height: 250px;">
+                    <canvas id="assetChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-6 mb-4">
+        <div class="card dashboard-card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>Trading Summary
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-4">
+                        <h4 class="text-bull">{{ winning_trades }}</h4>
+                        <small class="text-muted">Winning Trades</small>
+                    </div>
+                    <div class="col-4">
+                        <h4 class="text-bear">{{ losing_trades }}</h4>
+                        <small class="text-muted">Losing Trades</small>
+                    </div>
+                    <div class="col-4">
+                        <h4 class="text-neutral">{{ open_trades_count }}</h4>
+                        <small class="text-muted">Active</small>
+                    </div>
+                </div>
+                <hr style="border-color: var(--border-color);">
+                <div class="mt-3">
+                    <p><strong class="text-gold">Best Winning Streak:</strong> <span class="text-bull">{{ max_consecutive_wins }} consecutive wins</span></p>
+                    <p><strong class="text-gold">Worst Losing Streak:</strong> <span class="text-bear">{{ max_consecutive_losses }} consecutive losses</span></p>
+                    <p><strong class="text-gold">Risk Management:</strong> <span class="text-neutral">Average R:R of {{ avg_rr }}</span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Recent Activity and Quick Actions -->
+<div class="row">
+    <div class="col-lg-8 mb-4">
+        <div class="card dashboard-card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-history me-2"></i>Recent Activity
+                </h5>
+                
+            </div>
+            <div class="card-body">
+                {% if has_trades %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Symbol</th>
+                                    <th>Position</th>
+                                    <th>Entry Date</th>
+                                    <th>P&L</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for trade in recent_trades %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'trade_detail' trade.pk %}" class="text-decoration-none">
+                                            <strong>{{ trade.symbol }}</strong>
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{ trade.position_type|lower }}">
+                                            {{ trade.position_type }}
+                                        </span>
+                                    </td>
+                                    <td>{{ trade.entry_date|date:"M d, H:i" }}</td>
+                                    <td>
+                                        {% if not trade.is_open %}
+                                            <span class="{% if trade.profit_loss >= 0 %}pnl-positive{% else %}pnl-negative{% endif %}">
+                                                ${{ trade.profit_loss|floatformat:2 }}
+                                            </span>
+                                        {% else %}
+                                            <span class="text-muted">Open</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if trade.is_open %}
+                                            <span class="badge bg-success">Open</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Closed</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="text-center mt-3">
+                        <a href="{% url 'trade_list' %}" class="btn btn-outline-primary">View All Trades</a>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-chart-line fa-4x text-muted mb-3"></i>
+                        <h5 class="text-muted">No trades recorded yet</h5>
+                        <p class="text-muted">Start by adding your first trade to see your activity here.</p>
+                        <a href="{% url 'trade_create' %}" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>Add Your First Trade
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Actions -->
+    <div class="col-lg-4 mb-4">
+        <div class="card dashboard-card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-bolt me-2"></i>Quick Actions
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{% url 'trade_create' %}" class="btn btn-success btn-lg">
+                        <i class="fas fa-plus me-2"></i>Add Trade
+                    </a>
+                    <a href="{% url 'trade_list' %}" class="btn btn-info btn-lg">
+                        <i class="fas fa-chart-bar me-2"></i>View All Trades
+                    </a>
+                    <a href="{% url 'journal_create' %}" class="btn btn-warning btn-lg">
+                        <i class="fas fa-book me-2"></i>Add Journal
+                    </a>
+                    <a href="{% url 'profile' %}" class="btn btn-secondary btn-lg">
+                        <i class="fas fa-cog me-2"></i>Settings
+                    </a>
+                </div>
+                
+                {% if has_journal_entries %}
+                <hr>
+                <h6 class="mt-3 mb-2">Recent Notes</h6>
+                {% for entry in recent_journal_entries %}
+                <div class="border-start border-primary ps-3 mb-2">
+                    <small class="text-muted">{{ entry.created_at|date:"M d" }}</small>
+                    <p class="mb-1 small">{{ entry.content|truncatechars:50 }}</p>
+                </div>
+                {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    {% if has_trades %}
+    // Chart configurations with Trading Theme
+    const chartColors = {
+        bullGreen: '#00C851',
+        bearRed: '#FF4444',
+        neutralBlue: '#2E86AB',
+        gold: '#FFD700',
+        orange: '#FF6B35',
+        darkBg: '#2a2a2a',
+        textLight: '#e0e0e0'
+    };
+
+    // P&L Over Time Chart
+    const pnlData = {{ pnl_chart_data|safe }};
+    if (pnlData.dates.length > 0) {
+        const pnlCtx = document.getElementById('pnlChart').getContext('2d');
+        new Chart(pnlCtx, {
+            type: 'line',
+            data: {
+                labels: pnlData.dates,
+                datasets: [{
+                    label: 'Cumulative P&L',
+                    data: pnlData.values,
+                    borderColor: chartColors.gold,
+                    backgroundColor: 'rgba(255, 215, 0, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4,
+                    pointBackgroundColor: pnlData.values.map(val => val >= 0 ? chartColors.bullGreen : chartColors.bearRed),
+                    pointBorderColor: chartColors.gold,
+                    pointRadius: 6,
+                    pointHoverRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        labels: {
+                            color: chartColors.textLight,
+                            font: { size: 14, weight: 'bold' }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        ticks: { color: chartColors.textLight },
+                        grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            color: chartColors.textLight,
+                            callback: function(value) {
+                                return '$' + value.toFixed(2);
+                            }
+                        },
+                        grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                    }
+                }
+            }
+        });
+    }
+
+    // Trade Distribution Chart
+    const distributionData = {{ profit_loss_distribution|safe }};
+    const distributionCtx = document.getElementById('distributionChart').getContext('2d');
+    new Chart(distributionCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Profitable', 'Losing', 'Breakeven'],
+            datasets: [{
+                data: [distributionData.profitable, distributionData.losing, distributionData.breakeven],
+                backgroundColor: [chartColors.bullGreen, chartColors.bearRed, chartColors.orange],
+                borderWidth: 3,
+                borderColor: chartColors.darkBg,
+                hoverBorderWidth: 5
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        color: chartColors.textLight,
+                        font: { size: 12, weight: 'bold' },
+                        padding: 20
+                    }
+                }
+            }
+        }
+    });
+
+    // Asset Distribution Chart
+    const assetData = {{ asset_distribution|safe }};
+    const assetLabels = Object.keys(assetData);
+    const assetValues = Object.values(assetData);
+    
+    if (assetLabels.length > 0) {
+        const assetCtx = document.getElementById('assetChart').getContext('2d');
+        new Chart(assetCtx, {
+            type: 'bar',
+            data: {
+                labels: assetLabels,
+                datasets: [{
+                    label: 'Number of Trades',
+                    data: assetValues,
+                    backgroundColor: [
+                        chartColors.bullGreen,
+                        chartColors.bearRed,
+                        chartColors.gold,
+                        chartColors.neutralBlue,
+                        chartColors.orange
+                    ],
+                    borderWidth: 2,
+                    borderColor: chartColors.darkBg,
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    x: {
+                        ticks: { color: chartColors.textLight },
+                        grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1,
+                            color: chartColors.textLight
+                        },
+                        grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                    }
+                }
+            }
+        });
+    }
+    {% endif %}
+});
+</script>
+
+</div> <!-- Close dashboard-container -->
+</body>
+{% endblock %}

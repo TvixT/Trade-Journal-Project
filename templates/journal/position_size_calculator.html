@@ -1,0 +1,150 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block title %}Position Size Calculator - Trading Journal{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center align-items-center" style="min-height: 80vh;">
+    <div class="col-md-7 col-lg-6">
+        <div class="psize-card-theme p-4 shadow-lg">
+            <div class="text-center mb-4">
+                <span class="psize-avatar-ring mb-3">
+                    <i class="fas fa-calculator fa-3x text-bull"></i>
+                </span>
+                <h2 class="text-bull mb-1">Position Size Calculator</h2>
+                <p class="text-bear">Calculate your optimal position size for each trade</p>
+            </div>
+            <form method="post" novalidate>
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="id_account_balance" class="form-label text-bull">Account Balance</label>
+                    {{ form.account_balance|add_class:'form-control form-control-theme' }}
+                    {% if form.account_balance.errors %}
+                        <div class="text-danger small">{% for error in form.account_balance.errors %}<div>{{ error }}</div>{% endfor %}</div>
+                    {% endif %}
+                </div>
+                <div class="mb-3">
+                    <label for="id_risk_percent" class="form-label text-bear">Risk % per Trade</label>
+                    {{ form.risk_percent|add_class:'form-control form-control-theme' }}
+                    {% if form.risk_percent.errors %}
+                        <div class="text-danger small">{% for error in form.risk_percent.errors %}<div>{{ error }}</div>{% endfor %}</div>
+                    {% endif %}
+                </div>
+                <div class="mb-3">
+                    <label for="id_entry_price" class="form-label text-bull">Entry Price</label>
+                    {{ form.entry_price|add_class:'form-control form-control-theme' }}
+                    {% if form.entry_price.errors %}
+                        <div class="text-danger small">{% for error in form.entry_price.errors %}<div>{{ error }}</div>{% endfor %}</div>
+                    {% endif %}
+                </div>
+                <div class="mb-3">
+                    <label for="id_stop_loss_price" class="form-label text-bear">Stop Loss Price</label>
+                    {{ form.stop_loss_price|add_class:'form-control form-control-theme' }}
+                    {% if form.stop_loss_price.errors %}
+                        <div class="text-danger small">{% for error in form.stop_loss_price.errors %}<div>{{ error }}</div>{% endfor %}</div>
+                    {% endif %}
+                </div>
+                {% if error %}
+                    <div class="alert-bear mb-3">{{ error }}</div>
+                {% endif %}
+                <div class="d-grid mb-2">
+                    <button type="submit" class="btn btn-bullbear btn-lg">
+                        <i class="fas fa-calculator me-2"></i>Calculate
+                    </button>
+                </div>
+            </form>
+            {% if result %}
+            <div class="result-card-bullbear mt-4 p-3 text-center animate-pulse-bullbear">
+                <h4 class="text-bull mb-2">Position Size</h4>
+                <div class="display-5 text-bull">{{ result }}</div>
+                <small class="text-bear">units/shares/contracts (based on your instrument)</small>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+body {
+    background: #181a1b;
+}
+.psize-card-theme {
+    background: linear-gradient(135deg, #232323 0%, #23272b 60%, #1a1a1a 100%);
+    border-radius: 18px;
+    border: 2.5px solid transparent;
+    background-clip: padding-box;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.22);
+    color: var(--light-text, #e0e0e0);
+    position: relative;
+}
+.psize-card-theme::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 5px;
+    background: linear-gradient(90deg, #FF4444 0%, #FFD700 50%, #00C851 100%);
+    border-radius: 18px 18px 0 0;
+    z-index: 2;
+}
+.psize-avatar-ring {
+    display: inline-block;
+    border-radius: 50%;
+    border: 3.5px solid #00C851;
+    padding: 0.25rem 0.5rem;
+    background: #181a1b;
+    box-shadow: 0 0 0 4px #FF4444;
+}
+.text-bull {
+    color: #00C851 !important;
+    font-weight: 700;
+}
+.text-bear {
+    color: #FF4444 !important;
+    font-weight: 700;
+}
+.form-control-theme {
+    background: #232323 !important;
+    color: var(--light-text, #e0e0e0) !important;
+    border: 1.5px solid #404040 !important;
+    border-radius: 8px !important;
+    font-weight: 600;
+    min-height: 44px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+.form-control-theme:focus {
+    border-color: #00C851 !important;
+    box-shadow: 0 0 0 2px rgba(0,200,81,0.15) !important;
+    color: #00C851 !important;
+}
+.btn-bullbear {
+    background: linear-gradient(90deg, #FF4444 0%, #00C851 100%);
+    color: #fff !important;
+    border: none;
+    font-weight: 700;
+    box-shadow: 0 2px 8px rgba(0,200,81,0.12), 0 2px 8px rgba(255,68,68,0.12);
+    transition: box-shadow 0.2s, transform 0.2s;
+}
+.btn-bullbear:hover {
+    box-shadow: 0 4px 16px rgba(0,200,81,0.22), 0 4px 16px rgba(255,68,68,0.22);
+    transform: translateY(-2px) scale(1.03);
+}
+.alert-bear {
+    background: linear-gradient(135deg, rgba(255, 68, 68, 0.12), rgba(255, 68, 68, 0.05));
+    border: 1px solid rgba(255, 68, 68, 0.3);
+    color: #FF4444;
+    border-radius: 8px;
+    font-weight: 600;
+    padding: 0.75rem 1rem;
+}
+.result-card-bullbear {
+    background: linear-gradient(135deg, rgba(0,200,81,0.08) 0%, rgba(255,68,68,0.08) 100%);
+    border: 2px solid #00C851;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,200,81,0.18), 0 4px 12px rgba(255,68,68,0.18);
+    animation: pulse-bullbear 2s infinite;
+}
+@keyframes pulse-bullbear {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(0,200,81,0.3), 0 0 0 0 rgba(255,68,68,0.3); }
+    50% { box-shadow: 0 0 0 10px rgba(0,200,81,0.12), 0 0 0 10px rgba(255,68,68,0.12); }
+}
+</style>
+{% endblock %}

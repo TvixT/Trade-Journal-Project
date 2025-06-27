@@ -1,0 +1,169 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+{% block title %}Start New Thread - Forum{% endblock %}
+{% block content %}
+<div class="forum-bg-dark py-4" style="min-height:100vh;">
+    <div class="container">
+        <div class="mb-4 d-flex align-items-center gap-3">
+            <a href="{% url 'forum_list' %}" class="btn btn-outline-secondary btn-back-forum">
+                <i class="fas fa-arrow-left me-1"></i>Back to Forum
+            </a>
+            <h2 class="forum-title-bullbear mb-0"><i class="fas fa-plus me-2"></i>Start New Thread</h2>
+        </div>
+        <div class="forum-new-thread-card-modern p-0 mx-auto">
+            <div class="forum-new-thread-header-dark px-4 py-3">
+                <i class="fas fa-comments forum-header-icon me-2"></i>
+                <span class="forum-header-title">Create a New Discussion</span>
+            </div>
+            <form method="post" novalidate class="p-4 pt-3">
+                {% csrf_token %}
+                <div class="mb-4">
+                    <label for="id_title" class="form-label text-bull">Thread Title</label>
+                    {{ form.title|add_class:'form-control form-control-theme forum-input-modern' }}
+                    {% if form.title.errors %}
+                        <div class="error-text mt-1">{% for error in form.title.errors %}<div>{{ error }}</div>{% endfor %}</div>
+                    {% endif %}
+                </div>
+                <div class="mb-4">
+                    <label for="id_content" class="form-label text-bear">First Post (optional)</label>
+                    <textarea name="content" class="form-control form-control-theme forum-input-modern" rows="4" placeholder="Write your first post..."></textarea>
+                </div>
+                <div class="d-grid mt-4">
+                    <button type="submit" class="btn forum-btn-bullbear-modern btn-lg"><i class="fas fa-plus me-2"></i>Create Thread</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<style>
+html, body {
+    background: #181a1a !important;
+    min-height: 100vh;
+}
+.forum-bg-dark {
+    background: #181a1a !important;
+    min-height: 100vh;
+}
+.container {
+    background: transparent !important;
+}
+.forum-title-bullbear {
+    color: #FFD700;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-shadow: 0 2px 8px #000;
+    font-size: 2rem;
+    display: flex;
+    align-items: center;
+}
+.forum-new-thread-card-modern {
+    background: #232323;
+    border-radius: 22px;
+    border: 1.5px solid #404040;
+    box-shadow: 0 8px 32px 0 rgba(0,200,81,0.10), 0 8px 32px 0 rgba(255,68,68,0.10);
+    max-width: 540px;
+    margin-top: 2.5rem;
+    color: #e0e0e0;
+    position: relative;
+    overflow: hidden;
+    animation: fadeInUp 0.7s cubic-bezier(.39,.575,.56,1.000);
+}
+.forum-new-thread-header-dark {
+    background: #23272b;
+    border-bottom: 2.5px solid #FFD700;
+    display: flex;
+    align-items: center;
+    border-radius: 22px 22px 0 0;
+    box-shadow: 0 2px 12px #00C85122;
+}
+.forum-header-icon {
+    color: #00C851;
+    font-size: 1.5rem;
+    text-shadow: 0 2px 8px #000;
+}
+.forum-header-title {
+    color: #FFD700;
+    font-size: 1.18rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-shadow: 0 1px 4px #000;
+}
+@keyframes fadeInUp {
+    0% { opacity: 0; transform: translateY(30px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+.forum-input-modern {
+    background: #23272b !important;
+    color: #e0e0e0 !important;
+    border: 1.5px solid #404040;
+    border-radius: 10px;
+    font-size: 1.08rem;
+    box-shadow: 0 1px 4px #00000022;
+    transition: border 0.2s, box-shadow 0.2s, background 0.2s, color 0.2s;
+    padding: 0.7rem 1.1rem;
+}
+.forum-input-modern:focus {
+    border: 1.5px solid #00C851;
+    box-shadow: 0 0 8px #00C85144;
+    background: #23272b;
+    color: #FFD700;
+}
+.error-text {
+    color: #FF4444;
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+.btn-back-forum {
+    background: #23272b;
+    color: #FFD700;
+    border: 1.5px solid #404040;
+    border-radius: 8px;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(0,200,81,0.08), 0 2px 8px rgba(255,68,68,0.08);
+    transition: background 0.2s, color 0.2s, border 0.2s;
+}
+.btn-back-forum:hover, .btn-back-forum:focus {
+    background: linear-gradient(90deg, #FFD700 0%, #00C851 100%);
+    color: #181a1a;
+    border: 1.5px solid #FFD700;
+    box-shadow: 0 0 8px #FFD70044;
+}
+.forum-btn-bullbear-modern {
+    background: linear-gradient(90deg, #00C851 0%, #FFD700 100%);
+    color: #181a1a !important;
+    border: 2px solid #FFD700;
+    font-weight: 800;
+    font-size: 1.15rem;
+    letter-spacing: 0.5px;
+    box-shadow: 0 0 18px #00C85144, 0 0 12px #FFD70044;
+    border-radius: 12px;
+    padding: 0.85rem 1.6rem;
+    transition: box-shadow 0.2s, background 0.2s, color 0.2s, border 0.2s, transform 0.2s;
+    text-shadow: 0 1px 4px #000;
+    position: relative;
+    z-index: 2;
+    outline: none;
+    text-align: center;
+}
+.forum-btn-bullbear-modern:hover, .forum-btn-bullbear-modern:focus {
+    background: linear-gradient(90deg, #FFD700 0%, #00C851 100%);
+    color: #181a1a !important;
+    border: 2px solid #00C851;
+    box-shadow: 0 0 24px #FFD70099, 0 0 18px #00C85199;
+    transform: translateY(-2px) scale(1.04);
+}
+@media (max-width: 600px) {
+    .forum-new-thread-card-modern {
+        max-width: 100%;
+        padding: 0;
+    }
+    .forum-title-bullbear {
+        font-size: 1.3rem;
+    }
+    .forum-new-thread-header-dark {
+        font-size: 1rem;
+        padding: 1rem 1rem 0.7rem 1rem;
+    }
+}
+</style>
+{% endblock %}

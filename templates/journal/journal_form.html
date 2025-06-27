@@ -1,0 +1,324 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} - Trading Journal{% endblock %}
+
+{% load widget_tweaks %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-9 col-lg-8">
+        <div class="card card-glass journal-form-card mt-4 mb-5">
+            <div class="card-header card-header-dark d-flex align-items-center">
+                <i class="fas fa-pen fa-lg text-gold me-3"></i>
+                <h3 class="mb-0 text-gold fw-bold">{{ title }}</h3>
+            </div>
+            <div class="card-body">
+                <form method="post" autocomplete="off">
+                    {% csrf_token %}
+                    <!-- Basic Information -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h5 class="section-title-gold mb-3"><i class="fas fa-info-circle me-2"></i>Basic Information</h5>
+                        </div>
+                        <div class="col-md-8 mb-3">
+                            <label for="{{ form.title.id_for_label }}" class="form-label text-gold">
+                                <i class="fas fa-heading me-2"></i>Title *
+                            </label>
+                            {{ form.title|add_class:'form-control form-control-dark' }}
+                            {% if form.title.errors %}
+                                <div class="error-text">
+                                    {% for error in form.title.errors %}<div>{{ error }}</div>{% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text text-muted">{{ form.title.help_text }}</div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="{{ form.entry_date.id_for_label }}" class="form-label text-gold">
+                                <i class="fas fa-calendar me-2"></i>Entry Date *
+                            </label>
+                            {{ form.entry_date|add_class:'form-control form-control-dark' }}
+                            {% if form.entry_date.errors %}
+                                <div class="error-text">
+                                    {% for error in form.entry_date.errors %}<div>{{ error }}</div>{% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text text-muted">{{ form.entry_date.help_text }}</div>
+                        </div>
+                    </div>
+                    <!-- Associated Trade -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h5 class="section-title-bull mb-3"><i class="fas fa-chart-line me-2"></i>Associated Trade</h5>
+                        </div>
+                        <div class="col-12 mb-3">
+                            <label for="{{ form.trade.id_for_label }}" class="form-label text-bull">
+                                <i class="fas fa-chart-line me-2"></i>Related Trade
+                            </label>
+                            {{ form.trade|add_class:'form-select form-control-dark' }}
+                            {% if form.trade.errors %}
+                                <div class="error-text">
+                                    {% for error in form.trade.errors %}<div>{{ error }}</div>{% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text text-muted">{{ form.trade.help_text }}</div>
+                        </div>
+                    </div>
+                    <!-- Main Content -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h5 class="section-title-gold mb-3"><i class="fas fa-file-alt me-2"></i>Journal Content</h5>
+                        </div>
+                        <div class="col-12 mb-3">
+                            <label for="{{ form.content.id_for_label }}" class="form-label text-gold">
+                                <i class="fas fa-file-alt me-2"></i>Content *
+                            </label>
+                            {{ form.content|add_class:'form-control form-control-dark' }}
+                            {% if form.content.errors %}
+                                <div class="error-text">
+                                    {% for error in form.content.errors %}<div>{{ error }}</div>{% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text text-muted">{{ form.content.help_text }}</div>
+                        </div>
+                    </div>
+                    <!-- Trading Analysis -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h5 class="section-title-bull mb-3"><i class="fas fa-brain me-2"></i>Trading Analysis</h5>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.mood.id_for_label }}" class="form-label text-bull">
+                                <i class="fas fa-smile me-2"></i>Mood
+                            </label>
+                            {{ form.mood|add_class:'form-select form-control-dark' }}
+                            {% if form.mood.errors %}
+                                <div class="error-text">
+                                    {% for error in form.mood.errors %}<div>{{ error }}</div>{% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text text-muted">{{ form.mood.help_text }}</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.strategy_used.id_for_label }}" class="form-label text-gold">
+                                <i class="fas fa-lightbulb me-2"></i>Strategy Used
+                            </label>
+                            {{ form.strategy_used|add_class:'form-control form-control-dark' }}
+                            {% if form.strategy_used.errors %}
+                                <div class="error-text">
+                                    {% for error in form.strategy_used.errors %}<div>{{ error }}</div>{% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text text-muted">{{ form.strategy_used.help_text }}</div>
+                        </div>
+                        <div class="col-12 mb-3">
+                            <label for="{{ form.market_conditions.id_for_label }}" class="form-label text-bull">
+                                <i class="fas fa-chart-area me-2"></i>Market Conditions
+                            </label>
+                            {{ form.market_conditions|add_class:'form-control form-control-dark' }}
+                            {% if form.market_conditions.errors %}
+                                <div class="error-text">
+                                    {% for error in form.market_conditions.errors %}<div>{{ error }}</div>{% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text text-muted">{{ form.market_conditions.help_text }}</div>
+                        </div>
+                        <div class="col-12 mb-3">
+                            <label for="{{ form.lessons_learned.id_for_label }}" class="form-label text-gold">
+                                <i class="fas fa-graduation-cap me-2"></i>Lessons Learned
+                            </label>
+                            {{ form.lessons_learned|add_class:'form-control form-control-dark' }}
+                            {% if form.lessons_learned.errors %}
+                                <div class="error-text">
+                                    {% for error in form.lessons_learned.errors %}<div>{{ error }}</div>{% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text text-muted">{{ form.lessons_learned.help_text }}</div>
+                        </div>
+                    </div>
+                    <!-- Tags and Rating -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h5 class="section-title-neutral mb-3"><i class="fas fa-tags me-2"></i>Categorization</h5>
+                        </div>
+                        <div class="col-md-8 mb-3">
+                            <label for="{{ form.tags.id_for_label }}" class="form-label text-neutral">
+                                <i class="fas fa-tags me-2"></i>Tags
+                            </label>
+                            {{ form.tags|add_class:'form-control form-control-dark' }}
+                            {% if form.tags.errors %}
+                                <div class="error-text">
+                                    {% for error in form.tags.errors %}<div>{{ error }}</div>{% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text text-muted">{{ form.tags.help_text }}</div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="{{ form.rating.id_for_label }}" class="form-label text-gold">
+                                <i class="fas fa-star me-2"></i>Self Rating
+                            </label>
+                            {{ form.rating|add_class:'form-select form-control-dark' }}
+                            {% if form.rating.errors %}
+                                <div class="error-text">
+                                    {% for error in form.rating.errors %}<div>{{ error }}</div>{% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text text-muted">{{ form.rating.help_text }}</div>
+                        </div>
+                    </div>
+                    <!-- Form Errors -->
+                    {% if form.non_field_errors %}
+                        <div class="alert-trading mb-3">
+                            {% for error in form.non_field_errors %}<div>{{ error }}</div>{% endfor %}
+                        </div>
+                    {% endif %}
+                    <!-- Action Buttons -->
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                        <a href="{% url 'journal_list' %}" class="btn btn-gradient-neutral">
+                            <i class="fas fa-arrow-left me-2"></i>Cancel
+                        </a>
+                        <button type="submit" class="btn btn-gradient-gold">
+                            <i class="fas fa-save me-2"></i>{{ button_text|default:"Save Entry" }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+body {
+    background: var(--dark-bg, #1a1a1a) !important;
+    color: var(--light-text, #e0e0e0) !important;
+    min-height: 100vh;
+}
+.card.card-glass.journal-form-card {
+    background: rgba(42,42,42,0.98);
+    border: 1.5px solid var(--border-color, #404040);
+    border-radius: 18px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.45), 0 1.5px 0 var(--gold, #FFD700);
+    backdrop-filter: blur(6px);
+    transition: box-shadow 0.3s, transform 0.3s;
+    overflow: hidden;
+}
+.card-header-dark {
+    background: linear-gradient(90deg, #232323 60%, #2a2a2a 100%);
+    border-bottom: 1.5px solid var(--border-color, #404040);
+}
+.section-title-gold {
+    color: var(--gold, #FFD700);
+    font-weight: 700;
+    border-bottom: 2px solid var(--gold, #FFD700);
+    padding-bottom: 0.3rem;
+    letter-spacing: 0.5px;
+}
+.section-title-bull {
+    color: var(--bull-green, #00C851);
+    font-weight: 700;
+    border-bottom: 2px solid var(--bull-green, #00C851);
+    padding-bottom: 0.3rem;
+    letter-spacing: 0.5px;
+}
+.section-title-neutral {
+    color: var(--neutral-blue, #2E86AB);
+    font-weight: 700;
+    border-bottom: 2px solid var(--neutral-blue, #2E86AB);
+    padding-bottom: 0.3rem;
+    letter-spacing: 0.5px;
+}
+.form-control-dark, .form-select.form-control-dark {
+    background: #232323 !important;
+    color: var(--light-text, #e0e0e0) !important;
+    border: 1.5px solid var(--border-color, #404040) !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+.form-control-dark:focus, .form-select.form-control-dark:focus {
+    border-color: var(--gold, #FFD700) !important;
+    box-shadow: 0 0 0 2px rgba(255,215,0,0.15) !important;
+    background: #232323 !important;
+    color: var(--gold, #FFD700) !important;
+}
+.form-label {
+    font-weight: 600;
+    letter-spacing: 0.2px;
+}
+.error-text {
+    color: var(--bear-red, #FF4444);
+    font-size: 0.95em;
+    font-weight: 500;
+    margin-top: 2px;
+}
+.alert-trading {
+    background: linear-gradient(135deg, rgba(255, 68, 68, 0.1), rgba(255, 68, 68, 0.05));
+    border: 1px solid rgba(255, 68, 68, 0.3);
+    color: var(--bear-red, #FF4444);
+    border-radius: 8px;
+    padding: 0.8em 1.2em;
+    font-weight: 600;
+}
+.btn-gradient-gold {
+    background: linear-gradient(90deg, #FFD700 60%, #fffbe6 100%);
+    color: #232323 !important;
+    border: none;
+    font-weight: 700;
+    box-shadow: 0 2px 8px rgba(255,215,0,0.12);
+    transition: box-shadow 0.2s, transform 0.2s;
+}
+.btn-gradient-gold:hover {
+    box-shadow: 0 4px 16px rgba(255,215,0,0.22);
+    transform: translateY(-2px) scale(1.03);
+}
+.btn-gradient-neutral {
+    background: linear-gradient(90deg, #2E86AB 60%, #5fa8d3 100%);
+    color: #fff !important;
+    border: none;
+    font-weight: 700;
+    box-shadow: 0 2px 8px rgba(46,134,171,0.12);
+    transition: box-shadow 0.2s, transform 0.2s;
+}
+.btn-gradient-neutral:hover {
+    box-shadow: 0 4px 16px rgba(46,134,171,0.22);
+    transform: translateY(-2px) scale(1.03);
+}
+::-webkit-input-placeholder { color: #888 !important; }
+::-moz-placeholder { color: #888 !important; }
+:-ms-input-placeholder { color: #888 !important; }
+::placeholder { color: #888 !important; }
+@media (max-width: 991px) {
+    .journal-form-card { margin-top: 1.5rem; }
+}
+@media (max-width: 767px) {
+    .journal-form-card { margin-top: 0.5rem; }
+    .section-title-gold, .section-title-bull, .section-title-neutral { font-size: 1.1rem; }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-resize textareas
+    const textareas = document.querySelectorAll('textarea');
+    textareas.forEach(textarea => {
+        textarea.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = this.scrollHeight + 'px';
+        });
+    });
+    // Character counter for title
+    const titleField = document.querySelector('#{{ form.title.id_for_label }}');
+    if (titleField) {
+        const counter = document.createElement('small');
+        counter.className = 'text-muted float-end';
+        titleField.parentNode.appendChild(counter);
+        function updateCounter() {
+            const remaining = 200 - titleField.value.length;
+            counter.textContent = `${remaining} characters remaining`;
+            counter.className = remaining < 20 ? 'text-warning float-end' : 'text-muted float-end';
+        }
+        titleField.addEventListener('input', updateCounter);
+        updateCounter();
+    }
+});
+</script>
+{% endblock %}

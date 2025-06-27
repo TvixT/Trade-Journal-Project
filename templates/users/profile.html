@@ -1,0 +1,200 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block title %}Profile - Trading Journal{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active" aria-current="page">
+    <i class="fas fa-user me-1"></i>Profile
+</li>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center align-items-start g-4" style="min-height: 80vh;">
+    <div class="col-lg-4 mb-4">
+        <div class="profile-card-theme text-center p-4 shadow-lg">
+            <div class="avatar-ring mx-auto mb-3">
+                <i class="fas fa-user-circle fa-6x text-gold"></i>
+            </div>
+            <h3 class="text-gold mb-1">{{ user.get_full_name|default:user.username }}</h3>
+            <p class="text-neutral mb-2">@{{ user.username }}</p>
+            <p class="text-muted mb-2">
+                <i class="fas fa-envelope me-2"></i>{{ user.email }}
+            </p>
+            {% if user.userprofile.phone_number %}
+            <p class="text-muted mb-2">
+                <i class="fas fa-phone me-2"></i>{{ user.userprofile.phone_number }}
+            </p>
+            {% endif %}
+            <small class="text-muted">
+                Member since {{ user.date_joined|date:"F Y" }}
+            </small>
+        </div>
+    </div>
+    <div class="col-lg-8 mb-4">
+        <div class="profile-card-theme p-4 shadow-lg">
+            <h4 class="mb-4 text-gold">
+                <i class="fas fa-edit me-2"></i>Update Profile
+            </h4>
+            <form method="post">
+                {% csrf_token %}
+                <h5 class="section-title-gold mb-3">Account Information</h5>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ user_form.username.id_for_label }}" class="form-label text-gold">Username</label>
+                        {{ user_form.username|add_class:'form-control form-control-theme' }}
+                        {% if user_form.username.errors %}
+                            <div class="text-danger small">
+                                {% for error in user_form.username.errors %}<div>{{ error }}</div>{% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ user_form.email.id_for_label }}" class="form-label text-gold">Email</label>
+                        {{ user_form.email|add_class:'form-control form-control-theme' }}
+                        {% if user_form.email.errors %}
+                            <div class="text-danger small">
+                                {% for error in user_form.email.errors %}<div>{{ error }}</div>{% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ user_form.first_name.id_for_label }}" class="form-label text-gold">First Name</label>
+                        {{ user_form.first_name|add_class:'form-control form-control-theme' }}
+                        {% if user_form.first_name.errors %}
+                            <div class="text-danger small">
+                                {% for error in user_form.first_name.errors %}<div>{{ error }}</div>{% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ user_form.last_name.id_for_label }}" class="form-label text-gold">Last Name</label>
+                        {{ user_form.last_name|add_class:'form-control form-control-theme' }}
+                        {% if user_form.last_name.errors %}
+                            <div class="text-danger small">
+                                {% for error in user_form.last_name.errors %}<div>{{ error }}</div>{% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <hr class="my-4 border-gold">
+                <h5 class="section-title-gold mb-3">Personal Information</h5>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ profile_form.phone_number.id_for_label }}" class="form-label text-gold">Phone Number</label>
+                        {{ profile_form.phone_number|add_class:'form-control form-control-theme' }}
+                        {% if profile_form.phone_number.errors %}
+                            <div class="text-danger small">
+                                {% for error in profile_form.phone_number.errors %}<div>{{ error }}</div>{% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ profile_form.date_of_birth.id_for_label }}" class="form-label text-gold">Date of Birth</label>
+                        {{ profile_form.date_of_birth|add_class:'form-control form-control-theme' }}
+                        {% if profile_form.date_of_birth.errors %}
+                            <div class="text-danger small">
+                                {% for error in profile_form.date_of_birth.errors %}<div>{{ error }}</div>{% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="{{ profile_form.bio.id_for_label }}" class="form-label text-gold">Bio</label>
+                    {{ profile_form.bio|add_class:'form-control form-control-theme' }}
+                    {% if profile_form.bio.errors %}
+                        <div class="text-danger small">
+                            {% for error in profile_form.bio.errors %}<div>{{ error }}</div>{% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                    <a href="{% url 'dashboard' %}" class="btn btn-outline-gold btn-lg me-2">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                    </a>
+                    <button type="submit" class="btn btn-gradient-gold btn-lg">
+                        <i class="fas fa-save me-2"></i>Update Profile
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+body {
+    background: #181a1b;
+}
+.profile-card-theme {
+    background: linear-gradient(135deg, #232323 0%, #23272b 100%);
+    border-radius: 18px;
+    border: 1.5px solid var(--border-color, #404040);
+    box-shadow: 0 4px 24px rgba(0,0,0,0.22), 0 1.5px 0 0 var(--gold, #FFD700);
+    color: var(--light-text, #e0e0e0);
+    transition: box-shadow 0.2s, transform 0.2s;
+}
+.profile-card-theme:hover {
+    box-shadow: 0 8px 32px rgba(255,215,0,0.10), 0 2px 0 0 var(--gold, #FFD700);
+    transform: translateY(-2px) scale(1.01);
+}
+.avatar-ring {
+    display: inline-block;
+    border-radius: 50%;
+    border: 3.5px solid var(--gold, #FFD700);
+    padding: 0.25rem;
+    background: #181a1b;
+}
+.text-gold {
+    color: var(--gold, #FFD700) !important;
+}
+.text-neutral {
+    color: #2E86AB !important;
+}
+.section-title-gold {
+    color: var(--gold, #FFD700);
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+.border-gold {
+    border-color: var(--gold, #FFD700) !important;
+}
+.form-control-theme {
+    background: #232323 !important;
+    color: var(--light-text, #e0e0e0) !important;
+    border: 1.5px solid var(--border-color, #404040) !important;
+    border-radius: 8px !important;
+    font-weight: 600;
+    min-height: 44px;
+}
+.form-control-theme:focus {
+    border-color: var(--gold, #FFD700) !important;
+    box-shadow: 0 0 0 2px rgba(255,215,0,0.15) !important;
+    color: var(--gold, #FFD700) !important;
+}
+.btn-gradient-gold {
+    background: linear-gradient(90deg, #FFD700 60%, #fffbe6 100%);
+    color: #232323 !important;
+    border: none;
+    font-weight: 700;
+    box-shadow: 0 2px 8px rgba(255,215,0,0.12);
+    transition: box-shadow 0.2s, transform 0.2s;
+}
+.btn-gradient-gold:hover {
+    box-shadow: 0 4px 16px rgba(255,215,0,0.22);
+    transform: translateY(-2px) scale(1.03);
+}
+.btn-outline-gold {
+    border: 2px solid var(--gold, #FFD700) !important;
+    color: var(--gold, #FFD700) !important;
+    background: transparent !important;
+    font-weight: 700;
+    transition: background 0.2s, color 0.2s;
+}
+.btn-outline-gold:hover {
+    background: var(--gold, #FFD700) !important;
+    color: #232323 !important;
+}
+</style>
+{% endblock %}

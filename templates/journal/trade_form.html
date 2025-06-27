@@ -1,0 +1,926 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block title %}{{ title }} - Trading Command Center{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Trading Command Center Theme for Trade Form */
+:root {
+    --bull-green: #00C851;
+    --bear-red: #FF4444;
+    --dark-bg: #1a1a1a;
+    --card-bg: #2a2a2a;
+    --accent-gold: #FFD700;
+    --neutral-blue: #2E86AB;
+    --warning-orange: #FF6B35;
+    --light-text: #f0f0f0;
+    --muted-text: #b0b0b0;
+    --border-color: #404040;
+    --darker-border: #2d2d2d;
+}
+
+body {
+    background-color: var(--dark-bg) !important;
+}
+
+body {
+    background-color: var(--dark-bg) !important;
+}
+
+.container,
+.container-fluid,
+.row,
+.col-12,
+.col-md-4,
+.col-md-6,
+.col-md-8,
+.col-lg-10,
+.col-xl-8 {
+    background: transparent !important;
+    border: none !important;
+}
+
+.trading-form-container {
+    background: var(--dark-bg);
+    min-height: 100vh;
+    padding: 2rem 0;
+}
+
+.trade-form-header {
+    background: linear-gradient(135deg, var(--card-bg) 0%, #2d2d2d 100%);
+    border: 1px solid var(--darker-border);
+    border-radius: 15px 15px 0 0;
+    padding: 2rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.trade-form-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--bear-red) 0%, var(--accent-gold) 50%, var(--bull-green) 100%);
+}
+
+.trade-form-header h2 {
+    color: var(--accent-gold);
+    font-weight: 700;
+    font-size: 2.2rem;
+    margin: 0;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+}
+
+.trade-form-subtitle {
+    color: var(--muted-text);
+    font-size: 1.1rem;
+    margin-top: 0.5rem;
+    font-weight: 300;
+}
+
+.trade-form-card {
+    background: linear-gradient(145deg, var(--card-bg), #252525);
+    border: 1px solid var(--darker-border);
+    border-radius: 0 0 15px 15px;
+    border-top: none;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    overflow: hidden;
+}
+
+.form-section {
+    padding: 2rem;
+    border-bottom: 1px solid var(--darker-border);
+    position: relative;
+}
+
+.form-section:last-child {
+    border-bottom: none;
+}
+
+.section-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(255, 215, 0, 0.2);
+}
+
+.section-icon {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, var(--accent-gold), #FFA500);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1rem;
+    box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
+}
+
+.section-icon i {
+    color: var(--dark-bg);
+    font-size: 1.2rem;
+}
+
+.section-title {
+    color: var(--light-text);
+    font-size: 1.4rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.trading-form-group {
+    margin-bottom: 1.5rem;
+}
+
+.trading-label {
+    color: var(--light-text);
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    font-size: 0.95rem;
+}
+
+.trading-label i {
+    color: var(--accent-gold);
+    margin-right: 0.5rem;
+    width: 16px;
+    text-align: center;
+}
+
+.trading-input,
+.trading-select,
+.trading-textarea {
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid var(--darker-border);
+    border-radius: 8px;
+    color: var(--light-text);
+    padding: 0.75rem 1rem;
+    font-size: 0.95rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    width: 100%;
+}
+
+.trading-select {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23e0e0e0' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 0.75rem center;
+    background-repeat: no-repeat;
+    background-size: 1.5em 1.5em;
+    padding-right: 2.5rem;
+    appearance: none;
+    background-color: rgba(255, 255, 255, 0.15);
+}
+
+.trading-select:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 215, 0, 0.3);
+}
+
+.trading-select option {
+    background-color: var(--card-bg);
+    color: var(--light-text);
+    padding: 0.5rem;
+}
+
+.trading-input:hover,
+.trading-select:hover,
+.trading-textarea:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 215, 0, 0.4);
+}
+
+.trading-input:focus,
+.trading-select:focus,
+.trading-textarea:focus {
+    outline: none;
+    border-color: var(--accent-gold);
+    background: rgba(255, 215, 0, 0.15);
+    box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.15);
+    transform: translateY(-2px);
+    color: var(--light-text);
+}
+
+.trading-input::placeholder {
+    color: var(--muted-text);
+    opacity: 0.8;
+}
+
+.help-text {
+    color: var(--muted-text);
+    font-size: 0.8rem;
+    margin-top: 0.25rem;
+    display: block;
+}
+
+.error-text {
+    color: var(--bear-red);
+    font-size: 0.85rem;
+    margin-top: 0.25rem;
+    display: block;
+    font-weight: 500;
+}
+
+.position-type-selector {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-top: 0.75rem;
+    padding: 1rem;
+    background: rgba(255, 215, 0, 0.02);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 215, 0, 0.1);
+}
+
+.position-option {
+    background: rgba(255, 255, 255, 0.03);
+    border: 2px solid var(--darker-border);
+    border-radius: 12px;
+    padding: 1rem 1.5rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 80px;
+    width: 160px;
+    flex-shrink: 0;
+}
+
+.position-option.long {
+    border-color: rgba(0, 200, 81, 0.4);
+    background: rgba(0, 200, 81, 0.05);
+}
+
+.position-option.long:hover,
+.position-option.long.selected {
+    border-color: var(--bull-green);
+    background: rgba(0, 200, 81, 0.15);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 200, 81, 0.3);
+}
+
+.position-option.short {
+    border-color: rgba(255, 68, 68, 0.4);
+    background: rgba(255, 68, 68, 0.05);
+}
+
+.position-option.short:hover,
+.position-option.short.selected {
+    border-color: var(--bear-red);
+    background: rgba(255, 68, 68, 0.15);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(255, 68, 68, 0.3);
+}
+
+.position-icon {
+    font-size: 2rem;
+    margin-bottom: 0.4rem;
+    display: block;
+    font-weight: bold;
+}
+
+.position-option.long .position-icon {
+    color: var(--bull-green);
+    text-shadow: 0 2px 8px rgba(0, 200, 81, 0.5);
+}
+
+.position-option.short .position-icon {
+    color: var(--bear-red);
+    text-shadow: 0 2px 8px rgba(255, 68, 68, 0.5);
+}
+
+.position-text {
+    color: var(--light-text);
+    font-weight: 700;
+    font-size: 1rem;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.2rem;
+}
+
+.position-desc {
+    color: var(--muted-text);
+    font-size: 0.75rem;
+    font-weight: 400;
+    line-height: 1.2;
+}
+
+.checkbox-container {
+    display: flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--darker-border);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-top: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.checkbox-container:hover {
+    border-color: var(--accent-gold);
+    background: rgba(255, 215, 0, 0.1);
+}
+
+.trading-checkbox {
+    margin-right: 0.75rem;
+    transform: scale(1.2);
+    accent-color: var(--accent-gold);
+}
+
+.checkbox-label {
+    color: var(--light-text);
+    font-weight: 500;
+    margin: 0;
+    cursor: pointer;
+}
+
+.form-actions {
+    background: linear-gradient(135deg, #2d2d2d, var(--dark-bg));
+    padding: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+}
+
+.btn-trading {
+    padding: 0.75rem 2rem;
+    border-radius: 8px;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 1rem;
+}
+
+.btn-cancel {
+    background: linear-gradient(135deg, #6c757d, #495057);
+    color: white;
+}
+
+.btn-cancel:hover {
+    background: linear-gradient(135deg, #5a6268, #343a40);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(108, 117, 125, 0.3);
+    color: white;
+}
+
+.btn-save {
+    background: linear-gradient(135deg, var(--bull-green), #00b347);
+    color: white;
+}
+
+.btn-save:hover {
+    background: linear-gradient(135deg, #00b347, #009639);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 200, 81, 0.4);
+    color: white;
+}
+
+.btn-trading i {
+    margin-right: 0.5rem;
+}
+
+.alert-trading {
+    background: linear-gradient(135deg, rgba(255, 68, 68, 0.1), rgba(255, 68, 68, 0.05));
+    border: 1px solid rgba(255, 68, 68, 0.3);
+    border-radius: 8px;
+    color: var(--bear-red);
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.price-calculator {
+    background: rgba(255, 215, 0, 0.08);
+    border: 1px solid rgba(255, 215, 0, 0.25);
+    border-radius: 8px;
+    padding: 1.25rem;
+    margin-top: 1rem;
+}
+
+.calculator-title {
+    color: var(--accent-gold);
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    font-size: 1rem;
+}
+
+.calculator-title i {
+    margin-right: 0.5rem;
+}
+
+.calculation-row {
+    display: flex;
+    justify-content: space-between;
+    color: var(--light-text);
+    margin-bottom: 0.4rem;
+    font-size: 0.95rem;
+}
+
+.calculation-value {
+    font-weight: 600;
+    color: var(--light-text);
+}
+
+@media (max-width: 768px) {
+    .trading-form-container {
+        padding: 1rem 0;
+    }
+    
+    .trade-form-header {
+        padding: 1.5rem;
+    }
+    
+    .trade-form-header h2 {
+        font-size: 1.8rem;
+    }
+    
+    .form-section {
+        padding: 1.5rem;
+    }
+    
+    .position-type-selector {
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .position-option {
+        width: 200px;
+        min-height: 70px;
+        padding: 0.75rem 1.25rem;
+    }
+    
+    .position-icon {
+        font-size: 1.75rem;
+    }
+    
+    .position-text {
+        font-size: 0.95rem;
+    }
+    
+    .position-desc {
+        font-size: 0.7rem;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+        padding: 1.5rem;
+    }
+    
+    .btn-trading {
+        width: 100%;
+        justify-content: center;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="trading-form-container">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-12 col-lg-10 col-xl-8">
+                
+                <!-- Header -->
+                <div class="trade-form-header">
+                    <h2>
+                        <i class="fas fa-chart-line me-3"></i>{{ title }}
+                    </h2>
+                    <p class="trade-form-subtitle">
+                        {% if object.pk %}
+                            Update your trade details and risk management parameters
+                        {% else %}
+                            Enter your new trade details to track performance and manage risk
+                        {% endif %}
+                    </p>
+                </div>
+
+                <!-- Form Card -->
+                <div class="trade-form-card">
+                    <form method="post" id="tradeForm">
+                        {% csrf_token %}
+                        
+                        <!-- Basic Information Section -->
+                        <div class="form-section">
+                            <div class="section-header">
+                                <div class="section-icon">
+                                    <i class="fas fa-info-circle"></i>
+                                </div>
+                                <h3 class="section-title">Trade Identification</h3>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="trading-form-group">
+                                        <label for="{{ form.symbol.id_for_label }}" class="trading-label">
+                                            <i class="fas fa-tag"></i>Symbol *
+                                        </label>
+                                        <input type="text" 
+                                               id="{{ form.symbol.id_for_label }}"
+                                               name="{{ form.symbol.name }}"
+                                               value="{{ form.symbol.value|default:'' }}"
+                                               class="trading-input"
+                                               placeholder="e.g., AAPL, EURUSD, BTCUSD"
+                                               style="text-transform: uppercase;"
+                                               required>
+                                        {% if form.symbol.errors %}
+                                            {% for error in form.symbol.errors %}
+                                                <span class="error-text">{{ error }}</span>
+                                            {% endfor %}
+                                        {% endif %}
+                                        <span class="help-text">{{ form.symbol.help_text }}</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="trading-form-group">
+                                        <label for="{{ form.asset_type.id_for_label }}" class="trading-label">
+                                            <i class="fas fa-layer-group"></i>Asset Type *
+                                        </label>
+                                        {{ form.asset_type|add_class:"trading-select" }}
+                                        {% if form.asset_type.errors %}
+                                            {% for error in form.asset_type.errors %}
+                                                <span class="error-text">{{ error }}</span>
+                                            {% endfor %}
+                                        {% endif %}
+                                        <span class="help-text">{{ form.asset_type.help_text }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="trading-form-group">
+                                        <label class="trading-label">
+                                            <i class="fas fa-exchange-alt"></i>Position Type *
+                                        </label>
+                                        <div class="position-type-selector">
+                                            <div class="position-option long {% if form.position_type.value == 'LONG' %}selected{% endif %}" 
+                                                 data-value="LONG">
+                                                <i class="fas fa-arrow-up position-icon"></i>
+                                                <div class="position-text">LONG</div>
+                                                <div class="position-desc">Buy expecting price increase</div>
+                                            </div>
+                                            <div class="position-option short {% if form.position_type.value == 'SHORT' %}selected{% endif %}" 
+                                                 data-value="SHORT">
+                                                <i class="fas fa-arrow-down position-icon"></i>
+                                                <div class="position-text">SHORT</div>
+                                                <div class="position-desc">Sell expecting price decrease</div>
+                                            </div>
+                                        </div>
+                                        <input type="hidden" name="{{ form.position_type.name }}" value="{{ form.position_type.value|default:'LONG' }}" id="position_type_input">
+                                        {% if form.position_type.errors %}
+                                            {% for error in form.position_type.errors %}
+                                                <span class="error-text">{{ error }}</span>
+                                            {% endfor %}
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Price & Size Section -->
+                        <div class="form-section">
+                            <div class="section-header">
+                                <div class="section-icon">
+                                    <i class="fas fa-dollar-sign"></i>
+                                </div>
+                                <h3 class="section-title">Price & Position Size</h3>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="trading-form-group">
+                                        <label for="{{ form.entry_price.id_for_label }}" class="trading-label">
+                                            <i class="fas fa-sign-in-alt"></i>Entry Price *
+                                        </label>
+                                        {{ form.entry_price|add_class:"trading-input" }}
+                                        {% if form.entry_price.errors %}
+                                            {% for error in form.entry_price.errors %}
+                                                <span class="error-text">{{ error }}</span>
+                                            {% endfor %}
+                                        {% endif %}
+                                        <span class="help-text">{{ form.entry_price.help_text }}</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-4">
+                                    <div class="trading-form-group">
+                                        <label for="{{ form.exit_price.id_for_label }}" class="trading-label">
+                                            <i class="fas fa-sign-out-alt"></i>Exit Price
+                                        </label>
+                                        {{ form.exit_price|add_class:"trading-input" }}
+                                        {% if form.exit_price.errors %}
+                                            {% for error in form.exit_price.errors %}
+                                                <span class="error-text">{{ error }}</span>
+                                            {% endfor %}
+                                        {% endif %}
+                                        <span class="help-text">{{ form.exit_price.help_text }}</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-4">
+                                    <div class="trading-form-group">
+                                        <label for="{{ form.position_size.id_for_label }}" class="trading-label">
+                                            <i class="fas fa-weight-hanging"></i>Position Size *
+                                        </label>
+                                        {{ form.position_size|add_class:"trading-input" }}
+                                        {% if form.position_size.errors %}
+                                            {% for error in form.position_size.errors %}
+                                                <span class="error-text">{{ error }}</span>
+                                            {% endfor %}
+                                        {% endif %}
+                                        <span class="help-text">{{ form.position_size.help_text }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Live P&L Calculator -->
+                            <div class="price-calculator" id="pnlCalculator" style="display: none;">
+                                <div class="calculator-title">
+                                    <i class="fas fa-calculator"></i>Live P&L Calculation
+                                </div>
+                                <div class="calculation-row">
+                                    <span>Position Value:</span>
+                                    <span class="calculation-value" id="positionValue">$0.00</span>
+                                </div>
+                                <div class="calculation-row">
+                                    <span>Profit/Loss:</span>
+                                    <span class="calculation-value" id="profitLoss">$0.00</span>
+                                </div>
+                                <div class="calculation-row">
+                                    <span>Profit/Loss %:</span>
+                                    <span class="calculation-value" id="profitLossPercent">0.00%</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Timing Section -->
+                        <div class="form-section">
+                            <div class="section-header">
+                                <div class="section-icon">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                                <h3 class="section-title">Trade Timing</h3>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="trading-form-group">
+                                        <label for="{{ form.entry_date.id_for_label }}" class="trading-label">
+                                            <i class="fas fa-calendar-plus"></i>Entry Date & Time *
+                                        </label>
+                                        {{ form.entry_date|add_class:"trading-input" }}
+                                        {% if form.entry_date.errors %}
+                                            {% for error in form.entry_date.errors %}
+                                                <span class="error-text">{{ error }}</span>
+                                            {% endfor %}
+                                        {% endif %}
+                                        <span class="help-text">{{ form.entry_date.help_text }}</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="trading-form-group">
+                                        <label for="{{ form.exit_date.id_for_label }}" class="trading-label">
+                                            <i class="fas fa-calendar-minus"></i>Exit Date & Time
+                                        </label>
+                                        {{ form.exit_date|add_class:"trading-input" }}
+                                        {% if form.exit_date.errors %}
+                                            {% for error in form.exit_date.errors %}
+                                                <span class="error-text">{{ error }}</span>
+                                            {% endfor %}
+                                        {% endif %}
+                                        <span class="help-text">{{ form.exit_date.help_text }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Risk Management Section -->
+                        <div class="form-section">
+                            <div class="section-header">
+                                <div class="section-icon">
+                                    <i class="fas fa-shield-alt"></i>
+                                </div>
+                                <h3 class="section-title">Risk Management</h3>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="trading-form-group">
+                                        <label for="{{ form.stop_loss.id_for_label }}" class="trading-label">
+                                            <i class="fas fa-hand-paper"></i>Stop Loss
+                                        </label>
+                                        {{ form.stop_loss|add_class:"trading-input" }}
+                                        {% if form.stop_loss.errors %}
+                                            {% for error in form.stop_loss.errors %}
+                                                <span class="error-text">{{ error }}</span>
+                                            {% endfor %}
+                                        {% endif %}
+                                        <span class="help-text">{{ form.stop_loss.help_text }}</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-4">
+                                    <div class="trading-form-group">
+                                        <label for="{{ form.take_profit.id_for_label }}" class="trading-label">
+                                            <i class="fas fa-bullseye"></i>Take Profit
+                                        </label>
+                                        {{ form.take_profit|add_class:"trading-input" }}
+                                        {% if form.take_profit.errors %}
+                                            {% for error in form.take_profit.errors %}
+                                                <span class="error-text">{{ error }}</span>
+                                            {% endfor %}
+                                        {% endif %}
+                                        <span class="help-text">{{ form.take_profit.help_text }}</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-4">
+                                    <div class="trading-form-group">
+                                        <label for="{{ form.commission.id_for_label }}" class="trading-label">
+                                            <i class="fas fa-percentage"></i>Commission & Fees
+                                        </label>
+                                        {{ form.commission|add_class:"trading-input" }}
+                                        {% if form.commission.errors %}
+                                            {% for error in form.commission.errors %}
+                                                <span class="error-text">{{ error }}</span>
+                                            {% endfor %}
+                                        {% endif %}
+                                        <span class="help-text">{{ form.commission.help_text }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Additional Information Section -->
+                        <div class="form-section">
+                            <div class="section-header">
+                                <div class="section-icon">
+                                    <i class="fas fa-sticky-note"></i>
+                                </div>
+                                <h3 class="section-title">Trade Notes & Status</h3>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <div class="trading-form-group">
+                                        <label for="{{ form.notes.id_for_label }}" class="trading-label">
+                                            <i class="fas fa-pen"></i>Trading Notes
+                                        </label>
+                                        {{ form.notes|add_class:"trading-textarea" }}
+                                        {% if form.notes.errors %}
+                                            {% for error in form.notes.errors %}
+                                                <span class="error-text">{{ error }}</span>
+                                            {% endfor %}
+                                        {% endif %}
+                                        <span class="help-text">{{ form.notes.help_text }}</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-4">
+                                    <div class="trading-form-group">
+                                        <label class="trading-label">
+                                            <i class="fas fa-toggle-on"></i>Trade Status
+                                        </label>
+                                        <div class="checkbox-container">
+                                            {{ form.is_open|add_class:"trading-checkbox" }}
+                                            <label for="{{ form.is_open.id_for_label }}" class="checkbox-label">
+                                                Position is still open
+                                            </label>
+                                        </div>
+                                        {% if form.is_open.errors %}
+                                            {% for error in form.is_open.errors %}
+                                                <span class="error-text">{{ error }}</span>
+                                            {% endfor %}
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Form Errors -->
+                        {% if form.non_field_errors %}
+                            <div class="form-section">
+                                <div class="alert-trading">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                    {% for error in form.non_field_errors %}
+                                        <div>{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% endif %}
+
+                        <!-- Action Buttons -->
+                        <div class="form-actions">
+                            <a href="{% url 'trade_list' %}" class="btn-trading btn-cancel">
+                                <i class="fas fa-arrow-left"></i>Cancel & Return
+                            </a>
+                            <button type="submit" class="btn-trading btn-save">
+                                <i class="fas fa-save"></i>{{ button_text|default:"Save Trade" }}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Position type selector
+    const positionOptions = document.querySelectorAll('.position-option');
+    const positionInput = document.getElementById('position_type_input');
+    
+    positionOptions.forEach(option => {
+        option.addEventListener('click', function() {
+            // Remove selected class from all options
+            positionOptions.forEach(opt => opt.classList.remove('selected'));
+            
+            // Add selected class to clicked option
+            this.classList.add('selected');
+            
+            // Update hidden input value
+            positionInput.value = this.dataset.value;
+        });
+    });
+    
+    // Live P&L Calculator
+    const entryPrice = document.getElementById('{{ form.entry_price.id_for_label }}');
+    const exitPrice = document.getElementById('{{ form.exit_price.id_for_label }}');
+    const positionSize = document.getElementById('{{ form.position_size.id_for_label }}');
+    const commission = document.getElementById('{{ form.commission.id_for_label }}');
+    const calculator = document.getElementById('pnlCalculator');
+    
+    function updateCalculator() {
+        const entry = parseFloat(entryPrice.value) || 0;
+        const exit = parseFloat(exitPrice.value) || 0;
+        const size = parseFloat(positionSize.value) || 0;
+        const comm = parseFloat(commission.value) || 0;
+        const position = positionInput.value;
+        
+        if (entry > 0 && exit > 0 && size > 0) {
+            calculator.style.display = 'block';
+            
+            const positionValue = entry * size;
+            let pnl = 0;
+            
+            if (position === 'LONG') {
+                pnl = (exit - entry) * size - comm;
+            } else {
+                pnl = (entry - exit) * size - comm;
+            }
+            
+            const pnlPercent = positionValue > 0 ? (pnl / positionValue) * 100 : 0;
+            
+            document.getElementById('positionValue').textContent = '$' + positionValue.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            document.getElementById('profitLoss').textContent = (pnl >= 0 ? '+$' : '-$') + Math.abs(pnl).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            document.getElementById('profitLossPercent').textContent = (pnlPercent >= 0 ? '+' : '') + pnlPercent.toFixed(2) + '%';
+            
+            // Color coding
+            const pnlColor = pnl >= 0 ? 'var(--bull-green)' : 'var(--bear-red)';
+            document.getElementById('profitLoss').style.color = pnlColor;
+            document.getElementById('profitLossPercent').style.color = pnlColor;
+        } else {
+            calculator.style.display = 'none';
+        }
+    }
+    
+    // Add event listeners for calculator
+    [entryPrice, exitPrice, positionSize, commission].forEach(input => {
+        if (input) {
+            input.addEventListener('input', updateCalculator);
+        }
+    });
+    
+    positionOptions.forEach(option => {
+        option.addEventListener('click', updateCalculator);
+    });
+    
+    // Initial calculator update
+    updateCalculator();
+    
+    // Form validation enhancements
+    const form = document.getElementById('tradeForm');
+    form.addEventListener('submit', function(e) {
+        // Add any custom validation here
+        console.log('Trade form submitted');
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+{% block title %}Trading News{% endblock %}
+{% block content %}
+<div class="forum-bg-dark py-4" style="min-height:100vh;">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="forum-title mb-0" style="color: #ffffff;"><i class="fas fa-newspaper me-2"></i>Trading News</h2>
+        </div>
+        {% if error %}
+            <div class="alert alert-danger" style="background: #2a2a2a; color: #FF4444; border: 1.5px solid #FF4444;">
+                <i class="fas fa-exclamation-triangle me-2"></i>{{ error }}
+            </div>
+        {% endif %}
+        <div class="row g-4">
+            {% for article in page_obj.object_list %}
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="news-card h-100">
+                    <a href="{{ article.link }}" target="_blank" class="news-link">
+                        {% if article.image_url %}
+                        <div class="news-image mb-2">
+                            <img src="{{ article.image_url }}" alt="News image" class="img-fluid rounded" style="max-height:180px;object-fit:cover;width:100%;background:#232323;">
+                        </div>
+                        {% endif %}
+                        <div class="news-title">{{ article.title }}</div>
+                        <div class="news-summary mt-2">
+                            {{ article.summary|striptags|truncatechars:220|default:'No summary available.' }}
+                        </div>
+                        <div class="news-date mt-3 text-muted small">
+                            <i class="fas fa-clock me-1"></i>
+                            {% if article.published_at %}
+                                {% if article.published_at|add:0 %}{{ article.published_at|date:'M d, Y H:i' }}{% else %}{{ article.published_at|date:'M d, Y H:i' }}{% endif %}
+                            {% endif %}
+                        </div>
+                    </a>
+                </div>
+            </div>
+            {% empty %}
+            <div class="text-center py-5 w-100">
+                <i class="fas fa-newspaper fa-3x text-bull mb-3"></i>
+                <h4 class="text-bull">No news articles found.</h4>
+            </div>
+            {% endfor %}
+        </div>
+        <nav class="mt-4">
+            <ul class="pagination justify-content-center forum-pagination-theme">
+                {% if page_obj.has_previous %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a></li>
+                {% endif %}
+                <li class="page-item disabled" style="background-color: #2a2a2a;"><span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+                {% if page_obj.has_next %}
+                <li class="page-item" ><a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+</div>
+<style>
+html, body {
+    background: #181a1a !important;
+    min-height: 100vh;
+}
+.forum-bg-dark {
+    background: #181a1a !important;
+    min-height: 100vh;
+}
+.news-image img {
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+}
+.container {
+    background: transparent !important;
+}
+.news-card {
+    background: linear-gradient(135deg, #232323 0%, #23272b 100%);
+    border-radius: 16px;
+    border: 1.5px solid #404040;
+    box-shadow: 0 2px 8px rgba(0,200,81,0.08), 0 2px 8px rgba(255,68,68,0.08);
+    padding: 1.5rem 1.5rem 1.2rem 1.5rem;
+    color: #e0e0e0;
+    transition: box-shadow 0.2s, transform 0.2s, border 0.2s;
+    position: relative;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    word-break: break-word;
+}
+.news-card:hover {
+    box-shadow: 0 6px 24px rgba(0,200,81,0.18), 0 6px 24px rgba(255,68,68,0.18);
+    border: 1.5px solid #FFD700;
+    transform: translateY(-2px) scale(1.01);
+}
+.news-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    height: 100%;
+}
+.news-title {
+    color: #FFD700;
+    font-size: 1.12rem;
+    font-weight: 600;
+    text-shadow: 0 1px 4px #000;
+    margin-bottom: 0.5rem;
+}
+.news-summary {
+    color: #e0e0e0;
+    font-size: 1rem;
+    margin-top: 0.5rem;
+    min-height: 2.5rem;
+}
+.news-date {
+    color: #888;
+    font-size: 0.95rem;
+    margin-top: auto;
+}
+.forum-pagination-theme .page-link {
+    background: #23272b;
+    color: #FFD700;
+    border: 1.5px solid #404040;
+    border-radius: 8px;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(0,200,81,0.08), 0 2px 8px rgba(255,68,68,0.08);
+    transition: background 0.2s, color 0.2s, border 0.2s;
+}
+.forum-pagination-theme .page-link:hover, .forum-pagination-theme .page-item.active .page-link {
+    background: linear-gradient(90deg, #00C851 0%, #FFD700 100%);
+    color: #181a1a;
+    border: 1.5px solid #FFD700;
+    box-shadow: 0 0 8px #FFD70044;
+}
+.forum-pagination-theme .page-item.disabled .page-link {
+    background: #23272b;
+    color: #888;
+    border: 1.5px solid #404040;
+    opacity: 0.7;
+}
+</style>
+{% endblock %}

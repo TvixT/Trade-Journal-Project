@@ -1,0 +1,1458 @@
+{% extends 'base.html' %}
+{% load journal_extras %}
+
+{% block title %}{{ trade.symbol }} Trade Details - Trading Journal{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item">
+    <a href="{% url 'trade_list' %}" class="text-decoration-none">
+        <i class="fas fa-chart-line me-1"></i>Trades
+    </a>
+</li>
+<li class="breadcrumb-item active" aria-current="page">{{ trade.symbol }}</li>
+{% endblock %}
+
+{% block content %}
+<!-- Trade Detail Header -->
+<div class="trade-detail-header mb-4">
+    <div class="row align-items-center">
+        <div class="col-lg-8">
+            <div class="trade-header-content">
+                <div class="symbol-title">
+                    <h1 class="trade-symbol">
+                        <i class="fas fa-chart-candlestick me-3"></i>{{ trade.symbol }}
+                        <span class="position-badge {% if trade.position_type == 'LONG' %}long{% else %}short{% endif %}">
+                            {% if trade.position_type == 'LONG' %}
+                                <i class="fas fa-arrow-up me-1"></i>LONG
+                            {% else %}
+                                <i class="fas fa-arrow-down me-1"></i>SHORT
+                            {% endif %}
+                        </span>
+                    </h1>
+                    <div class="trade-meta">
+                        <span class="status-badge {% if trade.is_open %}open{% else %}{% if trade.profit_loss > 0 %}win{% elif trade.profit_loss < 0 %}loss{% else %}breakeven{% endif %}{% endif %}">
+                            {% if trade.is_open %}
+                                <i class="fas fa-circle-play me-1"></i>Open Position
+                            {% else %}
+                                {% if trade.profit_loss > 0 %}
+                                    <i class="fas fa-trophy me-1"></i>Win
+                                {% elif trade.profit_loss < 0 %}
+                                    <i class="fas fa-times-circle me-1"></i>Loss
+                                {% else %}
+                                    <i class="fas fa-minus-circle me-1"></i>Breakeven
+                                {% endif %}
+                            {% endif %}
+                        </span>
+                        <span class="trade-date">
+                            <i class="fas fa-calendar me-1"></i>{{ trade.entry_date|date:"M d, Y H:i" }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+       
+        </div>
+    </div>
+</div>
+
+<!-- Trade Performance Metrics -->
+<div class="row mb-4">
+    <!-- P&L Card -->
+    <div class="col-xl-3 col-lg-6 mb-3">
+        <div class="kpi-card {% if not trade.is_open %}{% if trade.profit_loss > 0 %}profit-glow{% elif trade.profit_loss < 0 %}loss-glow{% endif %}{% endif %}">
+            <div class="kpi-icon">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <div class="kpi-content">
+                <div class="kpi-label">Profit & Loss</div>
+                {% if not trade.is_open %}
+                    <div class="kpi-value {% if trade.profit_loss >= 0 %}profit{% else %}loss{% endif %}">
+                        ${{ trade.profit_loss|floatformat:2 }}
+                    </div>
+                    <div class="kpi-sub">{{ trade.profit_loss_percentage|floatformat:2 }}%</div>
+                {% else %}
+                    {% if trade.unrealized_pnl != 0 %}
+                        <div class="kpi-value {% if trade.unrealized_pnl >= 0 %}profit{% else %}loss{% endif %}" title="Unrealized P&L">
+                            ${{ trade.unrealized_pnl|floatformat:2 }}*
+                        </div>
+                        <div class="kpi-sub">Unrealized</div>
+                    {% else %}
+                        <div class="kpi-value neutral">Open Position</div>
+                        <div class="kpi-sub">No current P&L</div>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Entry Price Card -->
+    <div class="col-xl-3 col-lg-6 mb-3">
+        <div class="kpi-card">
+            <div class="kpi-icon">
+                <i class="fas fa-sign-in-alt"></i>
+            </div>
+            <div class="kpi-content">
+                <div class="kpi-label">Entry Price</div>
+                <div class="kpi-value">${{ trade.entry_price|floatformat:4 }}</div>
+                <div class="kpi-sub">{{ trade.entry_date|date:"M d, H:i" }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Exit Price Card -->
+    <div class="col-xl-3 col-lg-6 mb-3">
+        <div class="kpi-card">
+            <div class="kpi-icon">
+                <i class="fas fa-sign-out-alt"></i>
+            </div>
+            <div class="kpi-content">
+                <div class="kpi-label">Exit Price</div>
+                {% if trade.exit_price %}
+                    <div class="kpi-value">${{ trade.exit_price|floatformat:4 }}</div>
+                    <div class="kpi-sub">{{ trade.exit_date|date:"M d, H:i" }}</div>
+                {% else %}
+                    <div class="kpi-value neutral">Open</div>
+                    <div class="kpi-sub">Not closed yet</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Risk-Reward Card -->
+    <div class="col-xl-3 col-lg-6 mb-3">
+        <div class="kpi-card">
+            <div class="kpi-icon">
+                <i class="fas fa-balance-scale"></i>
+            </div>
+            <div class="kpi-content">
+                <div class="kpi-label">Risk:Reward</div>
+                {% if trade.risk_reward_ratio > 0 %}
+                    <div class="kpi-value {% if trade.risk_reward_ratio >= 2 %}profit{% elif trade.risk_reward_ratio >= 1 %}warning{% else %}loss{% endif %}">
+                        {{ trade.risk_reward_ratio|floatformat:2 }}
+                    </div>
+                    <div class="kpi-sub">
+                        {% if trade.risk_reward_ratio >= 2 %}Excellent{% elif trade.risk_reward_ratio >= 1 %}Good{% else %}Poor{% endif %}
+                    </div>
+                {% else %}
+                    <div class="kpi-value neutral">-</div>
+                    <div class="kpi-sub">Need SL & TP</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Trade Details Section -->
+<div class="row mb-4">
+    <!-- Main Trade Information -->
+    <div class="col-lg-8">
+        <div class="trade-detail-card">
+            <div class="card-header">
+                <h3 class="section-title">
+                    <i class="fas fa-info-circle me-2"></i>Trade Details
+                </h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="detail-group">
+                            <h5 class="detail-section-title">Position Information</h5>
+                            <div class="detail-row">
+                                <span class="detail-label">Symbol</span>
+                                <span class="detail-value symbol-highlight">{{ trade.symbol }}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Asset Type</span>
+                                <span class="detail-value">{{ trade.get_asset_type_display }}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Position Type</span>
+                                <span class="detail-value">
+                                    <span class="position-badge small {% if trade.position_type == 'LONG' %}long{% else %}short{% endif %}">
+                                        {% if trade.position_type == 'LONG' %}
+                                            <i class="fas fa-arrow-up me-1"></i>LONG
+                                        {% else %}
+                                            <i class="fas fa-arrow-down me-1"></i>SHORT
+                                        {% endif %}
+                                    </span>
+                                </span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Position Size</span>
+                                <span class="detail-value">
+                                    {% if trade.asset_type == 'CRYPTO' %}
+                                        <strong>{{ trade.position_size|floatformat:8 }} units</strong>
+                                        <small class="text-muted">(crypto)</small>
+                                    {% else %}
+                                        <strong>{{ trade.lot_size|floatformat:4 }} lots</strong>
+                                        <small class="text-muted">({{ trade.position_size|floatformat:0 }} units)</small>
+                                    {% endif %}
+                                </span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Commission</span>
+                                <span class="detail-value">${{ trade.commission|floatformat:2 }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="detail-group">
+                            <h5 class="detail-section-title">Risk Management</h5>
+                            <div class="detail-row">
+                                <span class="detail-label">Stop Loss</span>
+                                <span class="detail-value">
+                                    {% if trade.stop_loss %}
+                                        <span class="price-value loss">${{ trade.stop_loss|floatformat:4 }}</span>
+                                    {% else %}
+                                        <span class="text-muted">Not set</span>
+                                    {% endif %}
+                                </span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Take Profit</span>
+                                <span class="detail-value">
+                                    {% if trade.take_profit %}
+                                        <span class="price-value profit">${{ trade.take_profit|floatformat:4 }}</span>
+                                    {% else %}
+                                        <span class="text-muted">Not set</span>
+                                    {% endif %}
+                                </span>
+                            </div>
+                            {% if trade.risk_reward_ratio > 0 %}
+                            <div class="detail-row">
+                                <span class="detail-label">Risk Amount</span>
+                                <span class="detail-value">${{ trade|total_risk_amount|floatformat:2 }}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Reward Amount</span>
+                                <span class="detail-value">${{ trade|total_reward_amount|floatformat:2 }}</span>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="detail-group mt-4">
+                            <h5 class="detail-section-title">Trade Timing</h5>
+                            <div class="detail-row">
+                                <span class="detail-label">Entry Date</span>
+                                <span class="detail-value">{{ trade.entry_date|date:"M d, Y H:i" }}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Exit Date</span>
+                                <span class="detail-value">
+                                    {% if trade.exit_date %}
+                                        {{ trade.exit_date|date:"M d, Y H:i" }}
+                                    {% else %}
+                                        <span class="text-muted">Not closed</span>
+                                    {% endif %}
+                                </span>
+                            </div>
+                            {% if not trade.is_open and trade.exit_reason %}
+                            <div class="detail-row">
+                                <span class="detail-label">Exit Reason</span>
+                                <span class="detail-value">
+                                    <span class="exit-reason-badge {% if trade.exit_reason == 'TAKE_PROFIT' %}profit{% elif trade.exit_reason == 'STOP_LOSS' %}loss{% else %}neutral{% endif %}">
+                                        {{ trade.get_exit_reason_display }}
+                                    </span>
+                                </span>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                {% if trade.notes %}
+                <div class="trade-notes mt-4">
+                    <h5 class="detail-section-title">
+                        <i class="fas fa-sticky-note me-2"></i>Trade Notes
+                    </h5>
+                    <div class="notes-content">
+                        {{ trade.notes|linebreaks }}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Journal Entries - moved here to be directly below Trade Details -->
+        <div class="trade-detail-card mt-3">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h3 class="section-title">
+                    <i class="fas fa-book me-2"></i>Journal Entries
+                    <span class="entry-count">({{ journal_entries.count }})</span>
+                </h3>
+                <a href="{% url 'journal_create' %}?trade={{ trade.pk }}" class="btn btn-trade-primary btn-sm">
+                    <i class="fas fa-plus me-2"></i>Add Entry
+                </a>
+            </div>
+            <div class="card-body">
+                {% if journal_entries %}
+                    <div class="journal-entries">
+                        {% for entry in journal_entries %}
+                        <div class="journal-entry-card">
+                            <div class="entry-header">
+                                <h4 class="entry-title">
+                                    <a href="{% url 'journal_detail' entry.pk %}" class="entry-link">
+                                        {{ entry.title }}
+                                    </a>
+                                </h4>
+                                <div class="entry-meta">
+                                    <span class="entry-date">
+                                        <i class="fas fa-calendar me-1"></i>{{ entry.entry_date|date:"M d, Y" }}
+                                    </span>
+                                    {% if entry.mood %}
+                                        <span class="entry-mood">
+                                            <i class="fas fa-smile me-1"></i>{{ entry.get_mood_display }}
+                                        </span>
+                                    {% endif %}
+                                    {% if entry.rating %}
+                                        <span class="entry-rating">
+                                            {{ entry.rating_stars }}
+                                        </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="entry-content">
+                                {{ entry.content|truncatechars:200 }}
+                            </div>
+                            <div class="entry-actions">
+                                <a href="{% url 'journal_detail' entry.pk %}" class="btn btn-trade-outline btn-sm">
+                                    <i class="fas fa-eye me-1"></i>View Entry
+                                </a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="journal-empty-state">
+                        <div class="empty-icon mb-3">
+                            <i class="fas fa-book-open"></i>
+                        </div>
+                        <h4 class="empty-title mb-2">No Journal Entries Yet</h4>
+                        <p class="empty-description mb-3">
+                            Start documenting your trading thoughts and analysis for this trade.<br>
+                            Journal entries help you improve your trading strategy over time.
+                        </p>
+                        <a href="{% url 'journal_create' %}?trade={{ trade.pk }}" class="btn btn-trade-primary">
+                            <i class="fas fa-pen me-2"></i>Write Your First Entry
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <!-- Quick Actions Sidebar -->
+    <div class="col-lg-4">
+        <div class="trade-detail-card">
+            <div class="card-header">
+                <h3 class="section-title">
+                    <i class="fas fa-bolt me-2"></i>Quick Actions
+                </h3>
+            </div>
+            <div class="card-body">
+                <div class="action-buttons">
+                    <a href="{% url 'trade_update' trade.pk %}" class="btn btn-trade-primary btn-action">
+                        <i class="fas fa-edit me-2"></i>Edit Trade
+                    </a>
+                    
+                    {% if trade.is_open %}
+                    <button class="btn btn-trade-warning btn-action" data-bs-toggle="modal" data-bs-target="#closeTradeModal">
+                        <i class="fas fa-times-circle me-2"></i>Close Trade
+                    </button>
+                    {% endif %}
+                    
+                    <a href="{% url 'journal_create' %}?trade={{ trade.pk }}" class="btn btn-trade-info btn-action">
+                        <i class="fas fa-pen me-2"></i>Add Journal Entry
+                    </a>
+                    
+                    <div class="action-divider"></div>
+                    
+                    <a href="{% url 'trade_delete' trade.pk %}" class="btn btn-trade-danger btn-action">
+                        <i class="fas fa-trash me-2"></i>Delete Trade
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Trade Timeline -->
+        <div class="trade-detail-card mt-4">
+            <div class="card-header">
+                <h3 class="section-title">
+                    <i class="fas fa-clock me-2"></i>Trade Timeline
+                </h3>
+            </div>
+            <div class="card-body">
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-marker created"></div>
+                        <div class="timeline-content">
+                            <div class="timeline-title">Trade Created</div>
+                            <div class="timeline-time">{{ trade.created_at|date:"M d, Y H:i" }}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="timeline-item">
+                        <div class="timeline-marker entry"></div>
+                        <div class="timeline-content">
+                            <div class="timeline-title">Position Opened</div>
+                            <div class="timeline-time">{{ trade.entry_date|date:"M d, Y H:i" }}</div>
+                            <div class="timeline-detail">@ ${{ trade.entry_price|floatformat:4 }}</div>
+                        </div>
+                    </div>
+                    
+                    {% if trade.exit_date %}
+                    <div class="timeline-item">
+                        <div class="timeline-marker exit {% if trade.profit_loss > 0 %}profit{% elif trade.profit_loss < 0 %}loss{% else %}neutral{% endif %}"></div>
+                        <div class="timeline-content">
+                            <div class="timeline-title">Position Closed</div>
+                            <div class="timeline-time">{{ trade.exit_date|date:"M d, Y H:i" }}</div>
+                            <div class="timeline-detail">@ ${{ trade.exit_price|floatformat:4 }}</div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if trade.updated_at != trade.created_at %}
+                    <div class="timeline-item">
+                        <div class="timeline-marker updated"></div>
+                        <div class="timeline-content">
+                            <div class="timeline-title">Last Updated</div>
+                            <div class="timeline-time">{{ trade.updated_at|date:"M d, Y H:i" }}</div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Close Trade Modal -->
+{% if trade.is_open %}
+<div class="modal fade" id="closeTradeModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Close Trade: {{ trade.symbol }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="closeTradeForm">
+                    {% csrf_token %}
+                    <!-- Hidden fields for take profit and stop loss values -->
+                    <input type="hidden" id="tradeTakeProfit" value="{% if trade.take_profit %}{{ trade.take_profit }}{% endif %}">
+                    <input type="hidden" id="tradeStopLoss" value="{% if trade.stop_loss %}{{ trade.stop_loss }}{% endif %}">
+                    
+                    <div class="mb-3">
+                        <label for="exitReason" class="form-label">Exit Reason</label>
+                        <select class="form-select" id="exitReason" required>
+                            <option value="MANUAL">Manual Close</option>
+                            {% if trade.take_profit %}
+                            <option value="TAKE_PROFIT">Take Profit Hit</option>
+                            {% endif %}
+                            {% if trade.stop_loss %}
+                            <option value="STOP_LOSS">Stop Loss Hit</option>
+                            {% endif %}
+                        </select>
+                        <div class="form-text">How was this trade closed?</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="exitPrice" class="form-label">Exit Price</label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" id="exitPrice" step="0.0001" min="0.0001" required>
+                            <button class="btn btn-outline-secondary" type="button" id="editPriceBtn" style="display: none;" title="Edit auto-filled price">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                        </div>
+                        <div class="form-text" id="exitPriceHelp">
+                            Current entry price: ${{ trade.entry_price|floatformat:4 }}
+                            {% if trade.take_profit %}
+                            <br>Take Profit: ${{ trade.take_profit|floatformat:4 }}
+                            {% endif %}
+                            {% if trade.stop_loss %}
+                            <br>Stop Loss: ${{ trade.stop_loss|floatformat:4 }}
+                            {% endif %}
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-warning" id="confirmCloseTrade">Close Trade</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<style>
+/* Trading Theme Variables */
+:root {
+    --bull-green: #00C851;
+    --bear-red: #FF4444;
+    --dark-bg: #1a1a1a;
+    --card-bg: #2a2a2a;
+    --accent-gold: #FFD700;
+    --neutral-blue: #2E86AB;
+    --warning-orange: #FF6B35;
+    --light-text: #e0e0e0;
+    --muted-text: #888;
+    --border-color: #404040;
+}
+
+/* Global Trade Detail Styles */
+body {
+    background: var(--dark-bg) !important;
+    color: var(--light-text) !important;
+}
+
+/* Override footer for this page */
+footer {
+    background: var(--card-bg) !important;
+    border-top: 1px solid var(--border-color) !important;
+    color: var(--muted-text) !important;
+    margin-top: 3rem !important;
+}
+
+footer .container p {
+    color: var(--muted-text) !important;
+    margin: 0 !important;
+}
+
+/* Override main container */
+main.container {
+    background: transparent !important;
+    padding-bottom: 2rem !important;
+}
+
+/* Ensure proper spacing from FAB */
+.row:last-child {
+    margin-bottom: 2rem !important;
+}
+
+/* Remove any extra spacing at bottom */
+.trade-detail-card:last-child {
+    margin-bottom: 0 !important;
+}
+
+/* Header Styles */
+.trade-detail-header {
+    background: linear-gradient(135deg, var(--dark-bg) 0%, #2d2d2d 100%);
+    border-radius: 15px;
+    padding: 2rem;
+    border: 1px solid var(--border-color);
+    position: relative;
+    overflow: hidden;
+}
+
+.trade-detail-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--bear-red) 0%, var(--accent-gold) 50%, var(--bull-green) 100%);
+}
+
+.trade-symbol {
+    color: var(--accent-gold);
+    font-size: 2.5rem;
+    font-weight: 700;
+    text-shadow: 0 2px 4px rgba(255, 215, 0, 0.3);
+    margin-bottom: 0.5rem;
+}
+
+.position-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-left: 1rem;
+}
+
+.position-badge.long {
+    background: linear-gradient(135deg, var(--bull-green), #00a042);
+    color: white;
+    box-shadow: 0 4px 12px rgba(0, 200, 81, 0.3);
+}
+
+.position-badge.short {
+    background: linear-gradient(135deg, var(--bear-red), #e03d3d);
+    color: white;
+    box-shadow: 0 4px 12px rgba(255, 68, 68, 0.3);
+}
+
+.position-badge.small {
+    padding: 0.25rem 0.75rem;
+    font-size: 0.8rem;
+    margin-left: 0;
+}
+
+.trade-meta {
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+    margin-top: 1rem;
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+
+.status-badge.open {
+    background: linear-gradient(135deg, var(--neutral-blue), #246d8a);
+    color: white;
+    box-shadow: 0 4px 12px rgba(46, 134, 171, 0.3);
+}
+
+.status-badge.win {
+    background: linear-gradient(135deg, var(--bull-green), #00a042);
+    color: white;
+    box-shadow: 0 4px 12px rgba(0, 200, 81, 0.3);
+}
+
+.status-badge.loss {
+    background: linear-gradient(135deg, var(--bear-red), #e03d3d);
+    color: white;
+    box-shadow: 0 4px 12px rgba(255, 68, 68, 0.3);
+}
+
+.status-badge.breakeven {
+    background: linear-gradient(135deg, var(--warning-orange), #e55a29);
+    color: white;
+    box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+}
+
+.trade-date {
+    color: var(--muted-text);
+    font-size: 0.9rem;
+}
+
+.header-actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+/* KPI Cards */
+.kpi-card {
+    background: linear-gradient(145deg, var(--card-bg), #1f1f1f);
+    border: 1px solid var(--border-color);
+    border-radius: 15px;
+    padding: 1.5rem;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.kpi-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--accent-gold);
+    box-shadow: 0 10px 30px rgba(255, 215, 0, 0.2);
+}
+
+.kpi-card.profit-glow {
+    border-color: var(--bull-green);
+    box-shadow: 0 4px 20px rgba(0, 200, 81, 0.3);
+    animation: profitPulse 2s infinite;
+}
+
+.kpi-card.loss-glow {
+    border-color: var(--bear-red);
+    box-shadow: 0 4px 20px rgba(255, 68, 68, 0.3);
+    animation: lossPulse 2s infinite;
+}
+
+@keyframes profitPulse {
+    0%, 100% { box-shadow: 0 4px 20px rgba(0, 200, 81, 0.3); }
+    50% { box-shadow: 0 4px 25px rgba(0, 200, 81, 0.5); }
+}
+
+@keyframes lossPulse {
+    0%, 100% { box-shadow: 0 4px 20px rgba(255, 68, 68, 0.3); }
+    50% { box-shadow: 0 4px 25px rgba(255, 68, 68, 0.5); }
+}
+
+.kpi-icon {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    font-size: 2rem;
+    color: var(--accent-gold);
+    opacity: 0.3;
+}
+
+.kpi-content {
+    position: relative;
+    z-index: 2;
+}
+
+.kpi-label {
+    font-size: 0.9rem;
+    color: var(--muted-text);
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.kpi-value {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+}
+
+.kpi-value.profit {
+    color: var(--bull-green);
+    text-shadow: 0 2px 4px rgba(0, 200, 81, 0.3);
+}
+
+.kpi-value.loss {
+    color: var(--bear-red);
+    text-shadow: 0 2px 4px rgba(255, 68, 68, 0.3);
+}
+
+.kpi-value.warning {
+    color: var(--warning-orange);
+    text-shadow: 0 2px 4px rgba(255, 107, 53, 0.3);
+}
+
+.kpi-value.neutral {
+    color: var(--light-text);
+}
+
+.kpi-sub {
+    font-size: 0.8rem;
+    color: var(--muted-text);
+    font-weight: 500;
+}
+
+/* Trade Detail Cards */
+.trade-detail-card {
+    background: linear-gradient(145deg, var(--card-bg), #1f1f1f);
+    border: 1px solid var(--border-color);
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+    height: fit-content;
+    margin-bottom: 0.75rem;
+}
+
+.trade-detail-card:hover {
+    border-color: var(--accent-gold);
+    box-shadow: 0 8px 30px rgba(255, 215, 0, 0.2);
+}
+
+.trade-detail-card .card-header {
+    background: linear-gradient(135deg, #333, #2a2a2a);
+    border-bottom: 2px solid var(--accent-gold);
+    padding: 1.5rem;
+}
+
+.section-title {
+    color: var(--accent-gold);
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin: 0;
+    text-shadow: 0 2px 4px rgba(255, 215, 0, 0.3);
+}
+
+.trade-detail-card .card-body {
+    padding: 1.5rem;
+}
+
+/* Sidebar Layout Improvements */
+.col-lg-4 .trade-detail-card {
+    position: relative;
+    height: fit-content;
+    max-height: none;
+}
+
+/* Ensure sidebar doesn't extend beyond main content */
+@media (min-width: 992px) {
+    .col-lg-4 {
+        position: relative;
+    }
+    
+    .col-lg-4 .trade-detail-card:last-child {
+        margin-bottom: 0;
+    }
+}
+
+/* Detail Rows */
+.detail-group {
+    margin-bottom: 2rem;
+}
+
+.detail-section-title {
+    color: var(--accent-gold);
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid rgba(64, 64, 64, 0.3);
+}
+
+.detail-row:last-child {
+    border-bottom: none;
+}
+
+.detail-label {
+    color: var(--muted-text);
+    font-weight: 500;
+    font-size: 0.9rem;
+    flex: 0 0 40%;
+}
+
+.detail-value {
+    color: var(--light-text);
+    font-weight: 600;
+    text-align: right;
+    flex: 1;
+}
+
+.symbol-highlight {
+    color: var(--accent-gold);
+    font-size: 1.1rem;
+    text-shadow: 0 2px 4px rgba(255, 215, 0, 0.3);
+}
+
+.price-value.profit {
+    color: var(--bull-green);
+}
+
+.price-value.loss {
+    color: var(--bear-red);
+}
+
+.exit-reason-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.exit-reason-badge.profit {
+    background: var(--bull-green);
+    color: white;
+}
+
+.exit-reason-badge.loss {
+    background: var(--bear-red);
+    color: white;
+}
+
+.exit-reason-badge.neutral {
+    background: var(--neutral-blue);
+    color: white;
+}
+
+/* Trade Notes */
+.trade-notes {
+    border-top: 2px solid var(--border-color);
+    padding-top: 1.5rem;
+}
+
+.notes-content {
+    background: rgba(42, 42, 42, 0.5);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 1.5rem;
+    color: var(--light-text);
+    line-height: 1.6;
+}
+
+/* Action Buttons */
+.action-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.btn-action {
+    padding: 0.75rem 1.5rem;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+    border: none;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-trade-primary {
+    background: linear-gradient(135deg, var(--bull-green), #00a042);
+    color: white;
+    box-shadow: 0 4px 12px rgba(0, 200, 81, 0.3);
+}
+
+.btn-trade-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 200, 81, 0.4);
+    color: white;
+}
+
+.btn-trade-secondary {
+    background: linear-gradient(135deg, var(--neutral-blue), #246d8a);
+    color: white;
+    box-shadow: 0 4px 12px rgba(46, 134, 171, 0.3);
+}
+
+.btn-trade-secondary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(46, 134, 171, 0.4);
+    color: white;
+}
+
+.btn-trade-warning {
+    background: linear-gradient(135deg, var(--warning-orange), #e55a29);
+    color: white;
+    box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+}
+
+.btn-trade-warning:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 107, 53, 0.4);
+    color: white;
+}
+
+.btn-trade-info {
+    background: linear-gradient(135deg, var(--accent-gold), #e6c200);
+    color: var(--dark-bg);
+    box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
+}
+
+.btn-trade-info:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 215, 0, 0.4);
+    color: var(--dark-bg);
+}
+
+.btn-trade-danger {
+    background: linear-gradient(135deg, var(--bear-red), #e03d3d);
+    color: white;
+    box-shadow: 0 4px 12px rgba(255, 68, 68, 0.3);
+}
+
+.btn-trade-danger:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 68, 68, 0.4);
+    color: white;
+}
+
+.btn-trade-outline {
+    background: transparent;
+    border: 2px solid var(--accent-gold);
+    color: var(--accent-gold);
+}
+
+.btn-trade-outline:hover {
+    background: var(--accent-gold);
+    color: var(--dark-bg);
+    transform: translateY(-2px);
+}
+
+.action-divider {
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--border-color), transparent);
+    margin: 0.5rem 0;
+}
+
+/* Timeline */
+.timeline {
+    position: relative;
+    padding-left: 2rem;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 15px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(180deg, var(--bear-red), var(--accent-gold), var(--bull-green));
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 2rem;
+    padding-left: 1rem;
+}
+
+.timeline-marker {
+    position: absolute;
+    left: -1rem;
+    top: 0;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 3px solid var(--card-bg);
+}
+
+.timeline-marker.created {
+    background: var(--neutral-blue);
+}
+
+.timeline-marker.entry {
+    background: var(--accent-gold);
+}
+
+.timeline-marker.exit.profit {
+    background: var(--bull-green);
+}
+
+.timeline-marker.exit.loss {
+    background: var(--bear-red);
+}
+
+.timeline-marker.exit.neutral {
+    background: var(--warning-orange);
+}
+
+.timeline-marker.updated {
+    background: var(--muted-text);
+}
+
+.timeline-content {
+    background: rgba(42, 42, 42, 0.5);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.timeline-title {
+    color: var(--light-text);
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.timeline-time {
+    color: var(--muted-text);
+    font-size: 0.8rem;
+    margin-bottom: 0.25rem;
+}
+
+.timeline-detail {
+    color: var(--accent-gold);
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+/* Journal Entries */
+.entry-count {
+    color: var(--muted-text);
+    font-weight: 400;
+    font-size: 1rem;
+}
+
+.journal-entries {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.journal-entry-card {
+    background: rgba(42, 42, 42, 0.5);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.journal-entry-card:hover {
+    border-color: var(--accent-gold);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(255, 215, 0, 0.2);
+}
+
+.entry-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+
+.entry-title {
+    color: var(--light-text);
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.entry-link {
+    color: var(--accent-gold);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.entry-link:hover {
+    color: #fff;
+}
+
+.entry-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.25rem;
+    font-size: 0.8rem;
+    color: var(--muted-text);
+}
+
+.entry-content {
+    color: var(--light-text);
+    line-height: 1.6;
+    margin-bottom: 1rem;
+}
+
+.entry-actions {
+    display: flex;
+    justify-content: flex-end;
+}
+
+/* Journal Empty State */
+.journal-empty-state {
+    text-align: center;
+    padding: 1.5rem 1rem;
+    color: var(--muted-text);
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.journal-empty-state .empty-icon {
+    font-size: 3rem;
+    color: var(--border-color);
+    margin-bottom: 1rem;
+}
+
+.journal-empty-state .empty-title {
+    color: var(--light-text);
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+}
+
+.journal-empty-state .empty-description {
+    color: var(--muted-text);
+    font-size: 0.9rem;
+    line-height: 1.5;
+    margin-bottom: 1.5rem;
+    max-width: 400px;
+}
+
+/* Sidebar Spacer */
+.sidebar-spacer {
+    height: 1px;
+    opacity: 0;
+}
+
+/* Layout Improvements */
+.row + .row {
+    margin-top: 0.75rem;
+}
+
+/* Ensure proper section spacing */
+.trade-detail-header {
+    margin-bottom: 2rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .trade-symbol {
+        font-size: 2rem;
+    }
+    
+    .position-badge {
+        margin-left: 0;
+        margin-top: 0.5rem;
+        display: block;
+        width: fit-content;
+    }
+    
+    .trade-meta {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+    
+    .header-actions {
+        justify-content: flex-start;
+        margin-top: 1rem;
+    }
+    
+    .detail-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .detail-label {
+        flex: none;
+    }
+    
+    .detail-value {
+        text-align: left;
+    }
+    
+    .timeline {
+        padding-left: 1.5rem;
+    }
+    
+    .timeline::before {
+        left: 12px;
+    }
+    
+    .timeline-marker {
+        left: -0.75rem;
+    }
+    
+    .entry-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+    
+    .entry-meta {
+        align-items: flex-start;
+    }
+    
+    .journal-empty-state {
+        padding: 1.5rem 1rem;
+        min-height: 150px;
+    }
+    
+    .sidebar-spacer {
+        display: none;
+    }
+}
+
+/* Modal Styles */
+.modal-content {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    color: var(--light-text);
+}
+
+.modal-header {
+    border-bottom: 1px solid var(--border-color);
+}
+
+.modal-title {
+    color: var(--accent-gold);
+}
+
+.btn-close {
+    filter: invert(1);
+}
+
+.form-select, .form-control {
+    background: var(--dark-bg);
+    border: 1px solid var(--border-color);
+    color: var(--light-text);
+}
+
+.form-select:focus, .form-control:focus {
+    background: var(--dark-bg);
+    border-color: var(--accent-gold);
+    color: var(--light-text);
+    box-shadow: 0 0 0 0.2rem rgba(255, 215, 0, 0.25);
+}
+
+.form-text {
+    color: var(--muted-text);
+}
+</style>
+
+{% if trade.is_open %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const exitReasonElement = document.getElementById('exitReason');
+    const exitPriceElement = document.getElementById('exitPrice');
+    const takeProfitElement = document.getElementById('tradeTakeProfit');
+    const stopLossElement = document.getElementById('tradeStopLoss');
+    const editPriceBtn = document.getElementById('editPriceBtn');
+    
+    // Handle edit price button click
+    editPriceBtn.addEventListener('click', function() {
+        exitPriceElement.removeAttribute('readonly');
+        exitPriceElement.style.backgroundColor = '';
+        editPriceBtn.style.display = 'none';
+        exitPriceElement.focus();
+        exitPriceElement.select();
+        
+        const helpElement = document.getElementById('exitPriceHelp');
+        helpElement.innerHTML += '<br><em>Price manually edited - enter your actual exit price</em>';
+    });
+    
+    // Handle double-click on exit price to edit
+    exitPriceElement.addEventListener('dblclick', function() {
+        if (this.hasAttribute('readonly')) {
+            this.removeAttribute('readonly');
+            this.style.backgroundColor = '';
+            editPriceBtn.style.display = 'none';
+            this.focus();
+            this.select();
+            
+            const helpElement = document.getElementById('exitPriceHelp');
+            helpElement.innerHTML += '<br><em>Price manually edited - enter your actual exit price</em>';
+        }
+    });
+    
+    // Handle exit reason change for auto-fill
+    exitReasonElement.addEventListener('change', function() {
+        const selectedReason = this.value;
+        const helpElement = document.getElementById('exitPriceHelp');
+        const takeProfitValue = takeProfitElement.value;
+        const stopLossValue = stopLossElement.value;
+        
+        if (selectedReason === 'TAKE_PROFIT' && takeProfitValue) {
+            // Auto-fill with take profit value
+            exitPriceElement.value = takeProfitValue;
+            exitPriceElement.setAttribute('readonly', true);
+            exitPriceElement.style.backgroundColor = '#e9ecef';
+            editPriceBtn.style.display = 'inline-block';
+            helpElement.innerHTML = 'Current entry price: ${{ trade.entry_price|floatformat:4 }}<br><strong>Auto-filled with Take Profit: $' + parseFloat(takeProfitValue).toFixed(4) + '</strong><br><small>Double-click price or click edit button to manually override</small>';
+        } else if (selectedReason === 'STOP_LOSS' && stopLossValue) {
+            // Auto-fill with stop loss value
+            exitPriceElement.value = stopLossValue;
+            exitPriceElement.setAttribute('readonly', true);
+            exitPriceElement.style.backgroundColor = '#e9ecef';
+            editPriceBtn.style.display = 'inline-block';
+            helpElement.innerHTML = 'Current entry price: ${{ trade.entry_price|floatformat:4 }}<br><strong>Auto-filled with Stop Loss: $' + parseFloat(stopLossValue).toFixed(4) + '</strong><br><small>Double-click price or click edit button to manually override</small>';
+        } else {
+            // Manual entry - clear and enable editing
+            exitPriceElement.value = '';
+            exitPriceElement.removeAttribute('readonly');
+            exitPriceElement.style.backgroundColor = '';
+            editPriceBtn.style.display = 'none';
+            
+            let helpText = 'Current entry price: ${{ trade.entry_price|floatformat:4 }}';
+            if (takeProfitValue) {
+                helpText += '<br>Take Profit: $' + parseFloat(takeProfitValue).toFixed(4);
+            }
+            if (stopLossValue) {
+                helpText += '<br>Stop Loss: $' + parseFloat(stopLossValue).toFixed(4);
+            }
+            helpElement.innerHTML = helpText;
+            exitPriceElement.focus();
+        }
+    });
+    
+    document.getElementById('confirmCloseTrade').addEventListener('click', function() {
+        if (!exitPriceElement || !exitReasonElement) {
+            alert('Form elements not found');
+            return;
+        }
+        
+        const exitPrice = exitPriceElement.value.trim();
+        const exitReason = exitReasonElement.value;
+        
+        console.log('Exit Price:', exitPrice, 'Exit Reason:', exitReason); // Debug log
+        
+        if (!exitPrice || exitPrice === '') {
+            alert('Please enter an exit price');
+            exitPriceElement.focus();
+            return;
+        }
+        
+        if (!exitReason) {
+            alert('Please select an exit reason');
+            exitReasonElement.focus();
+            return;
+        }
+        
+        // Disable the button to prevent double clicks
+        const confirmButton = this;
+        confirmButton.disabled = true;
+        confirmButton.textContent = 'Closing...';
+        
+        // AJAX call to close trade
+        console.log('Sending close trade request for trade: {{ trade.pk }}'); // Debug log
+        
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+        if (!csrfToken) {
+            alert('CSRF token not found');
+            confirmButton.disabled = false;
+            confirmButton.textContent = 'Close Trade';
+            return;
+        }
+        
+        fetch(`/journal/trades/{{ trade.pk }}/close/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': csrfToken.value
+            },
+            body: `exit_price=${encodeURIComponent(exitPrice)}&exit_reason=${encodeURIComponent(exitReason)}`
+        })
+        .then(response => {
+            console.log('Response status:', response.status); // Debug log
+            return response.json().then(data => {
+                return { status: response.status, data: data };
+            });
+        })
+        .then(result => {
+            console.log('Response data:', result.data); // Debug log
+            if (result.status === 200 && result.data.success) {
+                // Success - reload the page
+                setTimeout(() => {
+                    location.reload();
+                }, 300);
+            } else {
+                // Error - show error message and re-enable button
+                const errorMsg = result.data.error || 'Unknown error occurred';
+                alert('Error: ' + errorMsg);
+                confirmButton.disabled = false;
+                confirmButton.textContent = 'Close Trade';
+                
+                // If the error is "already closed", reload the page anyway
+                if (errorMsg.includes('already closed')) {
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1000);
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Fetch error:', error);
+            alert('An error occurred while closing the trade: ' + error.message);
+            confirmButton.disabled = false;
+            confirmButton.textContent = 'Close Trade';
+            
+            // On network/fetch errors, reload the page to check current state
+            setTimeout(() => {
+                location.reload();
+            }, 2000);
+        });
+    });
+});
+</script>
+{% endif %}
+{% endblock %}

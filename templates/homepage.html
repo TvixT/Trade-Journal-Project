@@ -1,0 +1,303 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}TradingJournal - Your Trading Command Center{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/homepage.css' %}">
+<script>
+    // Add homepage class to body immediately
+    document.addEventListener('DOMContentLoaded', function() {
+        document.body.classList.add('homepage');
+    });
+</script>
+{% endblock %}
+
+{% block content %}
+<!-- Force dark theme immediately -->
+<style>
+    body { 
+        background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%) !important; 
+        color: #ffffff !important; 
+    }
+</style>
+<script>
+    // Add homepage class to body immediately
+    document.body.classList.add('homepage');
+</script>
+
+<!-- Floating Particles -->
+<div class="particles">
+    {% for i in "123456789012345678901234567890" %}
+    <div class="particle" style="left: {{ forloop.counter }}0%; animation-delay: {{ forloop.counter|add:10 }}s;"></div>
+    {% endfor %}
+</div>
+
+<!-- Hero Section -->
+<section class="hero-section {% if market_sentiment == 'bull' %}bull-mode{% elif market_sentiment == 'bear' %}bear-mode{% else %}neutral-mode{% endif %}">
+    <div class="container">
+        <div class="row justify-content-center text-center">
+            <div class="col-lg-10">
+                <div class="market-indicator">
+                    {% if market_sentiment == 'bull' %}
+                        📈
+                    {% elif market_sentiment == 'bear' %}
+                        📉
+                    {% else %}
+                        🎯
+                    {% endif %}
+                </div>
+                <h1 class="hero-title">Trading Journal</h1>
+                <p class="hero-subtitle">
+                    {% if user.is_authenticated %}
+                        Welcome back, {{ user.first_name|default:user.username }}! Your trading command center awaits.
+                    {% else %}
+                        Master the markets. Track every trade. Evolve your strategy.
+                    {% endif %}
+                </p>
+                
+                <div class="mt-4">
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'journal_dashboard' %}" class="cta-button me-3">
+                            <i class="fas fa-chart-line me-2"></i>View Dashboard
+                        </a>
+                        <a href="{% url 'trade_create' %}" class="cta-button-secondary">
+                            <i class="fas fa-plus me-2"></i>Add Trade
+                        </a>
+                    {% else %}
+                        <a href="{% url 'register' %}" class="cta-button me-3">
+                            <i class="fas fa-rocket me-2"></i>Start Trading
+                        </a>
+                        <a href="{% url 'login' %}" class="cta-button-secondary">
+                            <i class="fas fa-sign-in-alt me-2"></i>Login
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% if user.is_authenticated %}
+<!-- Stats Section for Authenticated Users -->
+<section class="stats-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-3 col-6">
+                <div class="stat-item">
+                    <div class="stat-number">{{ total_trades|default:0 }}</div>
+                    <div class="stat-label">Total Trades</div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="stat-item">
+                    <div class="stat-number" style="color: {% if total_pnl > 0 %}var(--bull-green){% elif total_pnl < 0 %}var(--bear-red){% else %}var(--gold){% endif %}">
+                        {% if total_pnl > 0 %}+{% endif %}${{ total_pnl|floatformat:2|default:0 }}
+                    </div>
+                    <div class="stat-label">Total P&L</div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="stat-item">
+                    <div class="stat-number">
+                        {% if market_sentiment == 'bull' %}📈{% elif market_sentiment == 'bear' %}📉{% else %}⚡{% endif %}
+                    </div>
+                    <div class="stat-label">Market Mood</div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="stat-item">
+                    <div class="stat-number">{{ recent_trades|length }}</div>
+                    <div class="stat-label">Recent Trades</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Market Cards Section -->
+<section class="container">
+    <div class="market-cards">
+        <div class="market-card bull-card">
+            <i class="fas fa-chart-line card-icon"></i>
+            <h3 class="card-title">Bull Market Mindset</h3>
+            <p class="card-description">
+                Ride the momentum with confidence. Track your winning strategies and compound your success with disciplined position sizing and risk management.
+            </p>
+            {% if user.is_authenticated %}
+                <a href="{% url 'trade_create' %}" class="cta-button">
+                    <i class="fas fa-plus me-2"></i>Log New Trade
+                </a>
+            {% endif %}
+        </div>
+        
+        <div class="market-card bear-card">
+            <i class="fas fa-shield-alt card-icon"></i>
+            <h3 class="card-title">Bear Market Defense</h3>
+            <p class="card-description">
+                Protect your capital when markets turn volatile. Learn from every loss, refine your strategy, and emerge stronger from challenging periods.
+            </p>
+            {% if user.is_authenticated %}
+                <a href="{% url 'journal_create' %}" class="cta-button">
+                    <i class="fas fa-edit me-2"></i>Write Analysis
+                </a>
+            {% endif %}
+        </div>
+        
+        <div class="market-card neutral-card">
+            <i class="fas fa-brain card-icon"></i>
+            <h3 class="card-title">Strategic Evolution</h3>
+            <p class="card-description">
+                Transform data into wisdom. Analyze patterns, identify opportunities, and continuously evolve your trading approach with detailed insights.
+            </p>
+            {% if user.is_authenticated %}
+                <a href="{% url 'journal_dashboard' %}" class="cta-button">
+                    <i class="fas fa-analytics me-2"></i>View Analytics
+                </a>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="features-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12 text-center">
+                <h2 style="color: #ffffff; font-size: 2.5rem; font-weight: 700; margin-bottom: 20px;">
+                    Built for Serious Traders
+                </h2>
+                <p style="color: #cccccc; font-size: 1.2rem; max-width: 600px; margin: 0 auto;">
+                    Every feature designed to give you the edge in volatile markets
+                </p>
+            </div>
+        </div>
+        
+        <div class="features-grid">
+            <div class="feature-item">
+                <i class="fas fa-coins feature-icon"></i>
+                <h4 class="feature-title">Multi-Asset Support</h4>
+                <p class="feature-description">Trade Forex, Stocks, Commodities, Oil, and Crypto with asset-specific lot calculations and P&L tracking.</p>
+            </div>
+            
+            <div class="feature-item">
+                <i class="fas fa-calculator feature-icon"></i>
+                <h4 class="feature-title">Precise Analytics</h4>
+                <p class="feature-description">Real-time P&L calculations, risk-reward ratios, and win rate analysis to optimize your performance.</p>
+            </div>
+            
+            <div class="feature-item">
+                <i class="fas fa-journal-whills feature-icon"></i>
+                <h4 class="feature-title">Trading Journal</h4>
+                <p class="feature-description">Document your strategies, emotions, and lessons learned to build a comprehensive trading database.</p>
+            </div>
+            
+            <div class="feature-item">
+                <i class="fas fa-chart-bar feature-icon"></i>
+                <h4 class="feature-title">Performance Dashboard</h4>
+                <p class="feature-description">Comprehensive overview of your trading performance with visual charts and key metrics.</p>
+            </div>
+            
+            <div class="feature-item">
+                <i class="fas fa-mobile-alt feature-icon"></i>
+                <h4 class="feature-title">Mobile Responsive</h4>
+                <p class="feature-description">Access your trading journal anywhere, anytime with our fully responsive design.</p>
+            </div>
+            
+            <div class="feature-item">
+                <i class="fas fa-lock feature-icon"></i>
+                <h4 class="feature-title">Secure & Private</h4>
+                <p class="feature-description">Your trading data is encrypted and secure. Only you have access to your performance metrics.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% if not user.is_authenticated %}
+<!-- CTA Section for Anonymous Users -->
+<section class="hero-section" style="padding: 60px 0;">
+    <div class="container">
+        <div class="row justify-content-center text-center">
+            <div class="col-lg-8">
+                <h2 style="color: #ffffff; font-size: 2.2rem; font-weight: 700; margin-bottom: 20px;">
+                    Ready to Master Your Trading?
+                </h2>
+                <p style="color: #cccccc; font-size: 1.1rem; margin-bottom: 40px;">
+                    Join thousands of traders who have transformed their performance with our comprehensive trading journal.
+                </p>
+                <a href="{% url 'register' %}" class="cta-button me-3">
+                    <i class="fas fa-user-plus me-2"></i>Create Free Account
+                </a>
+                <a href="{% url 'login' %}" class="cta-button-secondary">
+                    <i class="fas fa-sign-in-alt me-2"></i>Login to Continue
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<script>
+// Add some interactive elements
+document.addEventListener('DOMContentLoaded', function() {
+    // Animate market cards on scroll
+    const cards = document.querySelectorAll('.market-card');
+    const features = document.querySelectorAll('.feature-item');
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
+        });
+    });
+    
+    [...cards, ...features].forEach(el => {
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(30px)';
+        el.style.transition = 'all 0.6s ease';
+        observer.observe(el);
+    });
+    
+    // Add click effects to buttons
+    document.querySelectorAll('.cta-button, .cta-button-secondary').forEach(button => {
+        button.addEventListener('click', function(e) {
+            const ripple = document.createElement('div');
+            ripple.style.position = 'absolute';
+            ripple.style.borderRadius = '50%';
+            ripple.style.background = 'rgba(255,255,255,0.3)';
+            ripple.style.pointerEvents = 'none';
+            ripple.style.transform = 'scale(0)';
+            ripple.style.animation = 'ripple 0.6s linear';
+            
+            const rect = this.getBoundingClientRect();
+            const size = Math.max(rect.width, rect.height);
+            ripple.style.width = ripple.style.height = size + 'px';
+            ripple.style.left = (e.clientX - rect.left - size / 2) + 'px';
+            ripple.style.top = (e.clientY - rect.top - size / 2) + 'px';
+            
+            this.style.position = 'relative';
+            this.appendChild(ripple);
+            
+            setTimeout(() => {
+                ripple.remove();
+            }, 600);
+        });
+    });
+});
+
+// Add ripple animation CSS
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes ripple {
+        to {
+            transform: scale(2);
+            opacity: 0;
+        }
+    }
+`;
+document.head.appendChild(style);
+</script>
+{% endblock %}

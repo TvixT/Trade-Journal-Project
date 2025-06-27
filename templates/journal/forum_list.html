@@ -1,0 +1,181 @@
+{% extends 'base.html' %}
+{% block title %}Trader Community Forum{% endblock %}
+{% block content %}
+<div class="forum-bg-dark py-4" style="min-height:100vh;">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="forum-title mb-0"><i class="fas fa-users me-2"></i>Trader Community Forum</h2>
+            <a href="{% url 'forum_new_thread' %}" class="btn btn-bullbear forum-new-thread-btn">
+                <i class="fas fa-plus me-2"></i>Start New Thread
+            </a>
+        </div>
+        <div class="row g-4">
+            {% if page_obj.object_list %}
+                {% for thread in page_obj.object_list %}
+                <div class="col-12 col-md-6 col-lg-4">
+                    <div class="forum-thread-card h-100">
+                        <a href="{% url 'forum_thread_detail' thread.id %}" class="forum-thread-link">
+                            <div class="d-flex align-items-center mb-2">
+                                <span class="thread-badge {{ forloop.counter0|divisibleby:2|yesno:'bull-badge,bear-badge' }} me-2">
+                                    <i class="fas fa-chart-line"></i>
+                                </span>
+                                <span class="forum-thread-title">{{ thread.title }}</span>
+                            </div>
+                            <div class="small text-muted mt-1">
+                                Started by <span class="text-bear">{{ thread.creator }}</span> &middot; {{ thread.created_at|date:"M d, Y H:i" }}
+                            </div>
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+            <div class="text-center py-5 w-100">
+                <i class="fas fa-comments fa-3x text-bear mb-3"></i>
+                <h4 class="text-bear">No threads yet. Be the first to start a discussion!</h4>
+            </div>
+            {% endif %}
+        </div>
+        <nav class="mt-4">
+            <ul class="pagination justify-content-center forum-pagination-theme">
+                {% if page_obj.has_previous %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a></li>
+                {% endif %}
+                <li class="page-item disabled"><span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+                {% if page_obj.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+</div>
+<style>
+body, .forum-bg-dark {
+    background: #181a1a !important;
+}
+.forum-bg-dark {
+    min-height: 100vh;
+    background: #181a1a !important;
+}
+.forum-title {
+    color: #FFD700;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-shadow: 0 2px 8px #000;
+}
+.forum-thread-card {
+    background: linear-gradient(135deg, #232323 0%, #23272b 100%);
+    border-radius: 16px;
+    border: 1.5px solid #404040;
+    box-shadow: 0 2px 8px rgba(0,200,81,0.08), 0 2px 8px rgba(255,68,68,0.08);
+    padding: 1.5rem 1.5rem 1.2rem 1.5rem;
+    color: #e0e0e0;
+    transition: box-shadow 0.2s, transform 0.2s, border 0.2s;
+    position: relative;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+.forum-thread-card:hover {
+    box-shadow: 0 6px 24px rgba(0,200,81,0.18), 0 6px 24px rgba(255,68,68,0.18);
+    border: 1.5px solid #FFD700;
+    transform: translateY(-2px) scale(1.01);
+}
+.forum-thread-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+.forum-thread-title {
+    color: #FFD700;
+    font-size: 1.18rem;
+    font-weight: 600;
+    text-shadow: 0 1px 4px #000;
+}
+.thread-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.2rem;
+    height: 2.2rem;
+    border-radius: 50%;
+    font-size: 1.2rem;
+    box-shadow: 0 0 0 4px #23272b;
+    margin-right: 0.5rem;
+}
+.bull-badge {
+    background: linear-gradient(135deg, #00C851 60%, #2a2a2a 100%);
+    color: #fff;
+    border: 2px solid #00C851;
+    box-shadow: 0 0 8px #00C85144;
+}
+.bear-badge {
+    background: linear-gradient(135deg, #FF4444 60%, #2a2a2a 100%);
+    color: #fff;
+    border: 2px solid #FF4444;
+    box-shadow: 0 0 8px #FF444444;
+}
+.text-bear {
+    color: #FF4444 !important;
+}
+.text-bull {
+    color: #00C851 !important;
+}
+.forum-pagination-theme .page-link {
+    background: #23272b;
+    color: #FFD700;
+    border: 1.5px solid #404040;
+    border-radius: 8px;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(0,200,81,0.08), 0 2px 8px rgba(255,68,68,0.08);
+    transition: background 0.2s, color 0.2s, border 0.2s;
+}
+.forum-pagination-theme .page-link:hover, .forum-pagination-theme .page-item.active .page-link {
+    background: linear-gradient(90deg, #00C851 0%, #FFD700 100%);
+    color: #181a1a;
+    border: 1.5px solid #FFD700;
+    box-shadow: 0 0 8px #FFD70044;
+}
+.forum-pagination-theme .page-item.disabled .page-link {
+    background: #23272b;
+    color: #888;
+    border: 1.5px solid #404040;
+    opacity: 0.7;
+}
+.btn-bullbear.forum-new-thread-btn {
+    background: linear-gradient(90deg, #00C851 0%, #FFD700 100%);
+    color: #181a1a !important;
+    border: 2px solid #FFD700;
+    font-weight: 700;
+    font-size: 1.08rem;
+    letter-spacing: 0.5px;
+    box-shadow: 0 0 12px #00C85144, 0 0 8px #FFD70044;
+    border-radius: 12px;
+    padding: 0.7rem 1.6rem;
+    transition: box-shadow 0.2s, background 0.2s, color 0.2s, border 0.2s, transform 0.2s;
+    text-shadow: 0 1px 4px #000;
+    position: relative;
+    z-index: 2;
+    outline: none;
+}
+.btn-bullbear.forum-new-thread-btn:hover, .btn-bullbear.forum-new-thread-btn:focus {
+    background: linear-gradient(90deg, #FFD700 0%, #00C851 100%);
+    color: #181a1a !important;
+    border: 2px solid #00C851;
+    box-shadow: 0 0 18px #FFD70099, 0 0 12px #00C85199;
+    transform: translateY(-2px) scale(1.04);
+}
+@media (max-width: 600px) {
+    .forum-new-thread-btn {
+        width: 100%;
+        margin-top: 1rem;
+        font-size: 1rem;
+        padding: 0.7rem 1rem;
+    }
+    .d-flex.justify-content-between.align-items-center.mb-4 {
+        flex-direction: column;
+        align-items: flex-start !important;
+    }
+}
+</style>
+{% endblock %}
